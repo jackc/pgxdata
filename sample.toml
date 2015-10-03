@@ -1,0 +1,11 @@
+package = data
+
+[database]
+host = /private/tmp
+# port = 5432
+database = metabot_development
+# user
+
+[[tables]]
+table_name = customer
+# struct_name: CustomerRow
