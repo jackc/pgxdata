@@ -1,11 +1,12 @@
-package = data
+package = "data"
 
 [database]
-host = /private/tmp
-# port = 5432
-database = metabot_development
-# user
+host = "127.0.0.1"
+port = 5432
+database = "myapp_development"
+user = "myuser"
+password = "secret"
 
 [[tables]]
-table_name = customer
-# struct_name: CustomerRow
+table_name = "customer"
+# struct_name = "CustomerRow"

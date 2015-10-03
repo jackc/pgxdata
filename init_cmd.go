@@ -1,35 +1,50 @@
-
-
-
-
-
-
-
-
-    fmt.Fprintln(os.Stderr, "init requires exactly one argument")
-    fmt.Fprintln(os.Stderr, err)
-    os.Exit(1)
-    os.Exit(1)
-  "fmt"
-  "github.com/spf13/cobra"
-  "os"
-  if err := os.Mkdir(args[0], os.ModePerm); err != nil {
-  if len(args) != 1 {
-  }
-  }
-
-# port = 5432
-# struct_name: CustomerRow
-# user
-)
-[[tables]]
-[database]
-`
-const defaultConfig = `package %s
-database = metabot_development
-func initCmd(cmd *cobra.Command, args []string) {
-host = /private/tmp
-import (
 package main
-table_name = customer
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+
+	"github.com/spf13/cobra"
+)
+
+var defaultConfig = `package = "%s"
+
+[database]
+host = "127.0.0.1"
+port = 5432
+database = "myapp_development"
+user = "myuser"
+password = "secret"
+
+[[tables]]
+table_name = "customer"
+# struct_name = "CustomerRow"
+`
+
+func initCmd(cmd *cobra.Command, args []string) {
+	if len(args) != 1 {
+		fmt.Fprintln(os.Stderr, "init requires exactly one argument")
+		os.Exit(1)
+	}
+	pkgName := args[0]
+
+	err := os.Mkdir(pkgName, os.ModePerm)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	file, err := os.Create(filepath.Join(pkgName, "config.toml"))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	defer file.Close()
+
+	_, err = fmt.Fprintf(file, defaultConfig, pkgName)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }
