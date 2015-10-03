@@ -4,47 +4,81 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"text/template"
 
 	"github.com/spf13/cobra"
 )
 
-var defaultConfig = `package = "%s"
+type boxType struct {
+	Name      string
+	ValueType string
+}
 
-[database]
-host = "127.0.0.1"
-port = 5432
-database = "myapp_development"
-user = "myuser"
-password = "secret"
+type intBoxType struct {
+	Name    string
+	BitSize int
+}
 
-[[tables]]
-table_name = "customer"
-# struct_name = "CustomerRow"
-`
+type initData struct {
+	PkgName     string
+	Version     string
+	BoxTypes    []boxType
+	IntBoxTypes []intBoxType
+}
 
 func initCmd(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
 		fmt.Fprintln(os.Stderr, "init requires exactly one argument")
 		os.Exit(1)
 	}
-	pkgName := args[0]
 
-	err := os.Mkdir(pkgName, os.ModePerm)
+	data := initData{
+		PkgName: args[0],
+		Version: VERSION,
+		BoxTypes: []boxType{
+			{Name: "Bool", ValueType: "bool"},
+			{Name: "Int16", ValueType: "int16"},
+			{Name: "Int32", ValueType: "int32"},
+			{Name: "Int64", ValueType: "int64"},
+			{Name: "String", ValueType: "string"},
+			{Name: "Time", ValueType: "time.Time"},
+		},
+		IntBoxTypes: []intBoxType{
+			{Name: "Int16", BitSize: 16},
+			{Name: "Int32", BitSize: 32},
+			{Name: "Int64", BitSize: 64},
+		},
+	}
+
+	err := os.Mkdir(data.PkgName, os.ModePerm)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	file, err := os.Create(filepath.Join(pkgName, "config.toml"))
+	files := []struct {
+		path string
+		tmpl *template.Template
+	}{
+		{"config.toml", configTmpl},
+		{"attribute.go", attributeTmpl},
+		{"db.go", dbTmpl},
+	}
+	for _, f := range files {
+		err := writeInitFile(filepath.Join(data.PkgName, f.path), f.tmpl, data)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+	}
+}
+
+func writeInitFile(path string, tmpl *template.Template, data initData) error {
+	file, err := os.Create(path)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		return err
 	}
 	defer file.Close()
 
-	_, err = fmt.Fprintf(file, defaultConfig, pkgName)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
+	return tmpl.Execute(file, data)
 }
