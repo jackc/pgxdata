@@ -1,0 +1,22 @@
+func Update{{.StructName}}(db Queryer, id int32, row *{{.StructName}}) error {
+  sets := make([]string, 0, {{len .Columns}})
+  args := pgx.QueryArgs(make([]interface{}, 0, {{len .Columns}}))
+
+{{range .Columns}}  row.{{.FieldName}}.addUpdate(`{{.ColumnName}}`, &sets, &args)
+{{end}}
+
+  if len(sets) == 0 {
+    return nil
+  }
+
+  sql := `update "{{.TableName}}" set ` + strings.Join(sets, ", ") + ` where id=` + args.Append(id)
+
+  commandTag, err := db.Exec(sql, args...)
+  if err != nil {
+    return err
+  }
+  if commandTag.RowsAffected() != 1 {
+    return pgx.ErrNoRows
+  }
+  return nil
+}

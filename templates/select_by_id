@@ -1,0 +1,16 @@
+func Select{{.StructName}}ByID(db Queryer, id int32) (*{{.StructName}}, error) {
+  sql := `select{{ range $i, $column := .Columns}}{{if $i}},{{end}}
+  "{{$column.ColumnName}}"{{end}}
+from "{{.TableName}}"
+where id=$1`
+
+  var row {{.StructName}}
+  err := db.QueryRow(sql, id).Scan(
+{{range .Columns}}&row.{{.FieldName}},
+    {{end}})
+  if err != nil {
+    return nil, err
+  }
+
+  return &row, nil
+}

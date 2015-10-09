@@ -56,13 +56,19 @@ func initCmd(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	templates, err := template.ParseGlob(filepath.Join(appArgs.templatesPath, "*"))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
 	files := []struct {
 		path string
 		tmpl *template.Template
 	}{
-		{"config.toml", configTmpl},
-		{"attribute.go", attributeTmpl},
-		{"db.go", dbTmpl},
+		{"config.toml", templates.Lookup("config")},
+		{"attribute.go", templates.Lookup("attribute")},
+		{"db.go", templates.Lookup("db")},
 	}
 	for _, f := range files {
 		err := writeInitFile(filepath.Join(data.PkgName, f.path), f.tmpl, data)

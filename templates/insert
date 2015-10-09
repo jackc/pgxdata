@@ -1,0 +1,15 @@
+func Insert{{.StructName}}(db Queryer, row *{{.StructName}}) error {
+  args := pgx.QueryArgs(make([]interface{}, 0, {{len .Columns}}))
+
+  var columns, values []string
+
+{{range .Columns}}  row.{{.FieldName}}.addInsert(`{{.ColumnName}}`, &columns, &values, &args)
+{{end}}
+
+  sql := `insert into "{{.TableName}}"(` + strings.Join(columns, ", ") + `)
+values(` + strings.Join(values, ",") + `)
+returning id
+  `
+
+  return db.QueryRow(sql, args...).Scan(&row.ID)
+}

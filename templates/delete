@@ -1,0 +1,12 @@
+func Delete{{.StructName}}(db Queryer, id int32) error {
+  sql := `delete from "{{.TableName}}" where id=$1`
+
+  commandTag, err := db.Exec(sql, id)
+  if err != nil {
+    return err
+  }
+  if commandTag.RowsAffected() != 1 {
+    return pgx.ErrNoRows
+  }
+  return nil
+}

@@ -1,0 +1,9 @@
+package = "foo"
+
+[database]
+host = "/private/tmp"
+database = "crud"
+
+[[tables]]
+table_name = "customer"
+struct_name = "CustomerRow"

@@ -1,0 +1,26 @@
+func SelectAll{{.StructName}}(db Queryer) ([]{{.StructName}}, error) {
+  sql := `select{{ range $i, $column := .Columns}}{{if $i}},{{end}}
+  "{{$column.ColumnName}}"{{end}}
+from "{{.TableName}}"`
+
+  var rows []{{.StructName}}
+
+  dbRows, err := db.Query(sql)
+  if err != nil {
+    return nil, err
+  }
+
+  for dbRows.Next() {
+    var row {{.StructName}}
+    dbRows.Scan(
+{{range .Columns}}&row.{{.FieldName}},
+    {{end}})
+    rows = append(rows, row)
+  }
+
+  if dbRows.Err() != nil {
+    return nil, dbRows.Err()
+  }
+
+  return rows, nil
+}
