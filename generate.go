@@ -77,91 +77,11 @@ func generateCmd(cmd *cobra.Command, args []string) {
 
 	err = templates.ExecuteTemplate(os.Stdout, "row", struct {
 		PkgName    string
+		TableName  string
 		StructName string
 		Columns    []Column
 	}{
 		PkgName:    c.Package,
-		StructName: c.Tables[0].StructName,
-		Columns:    c.Tables[0].Columns,
-	})
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-
-	err = templates.ExecuteTemplate(os.Stdout, "count_func", struct {
-		TableName  string
-		StructName string
-	}{
-		TableName:  c.Tables[0].TableName,
-		StructName: c.Tables[0].StructName,
-	})
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-
-	err = templates.ExecuteTemplate(os.Stdout, "select_all_func", struct {
-		TableName  string
-		StructName string
-		Columns    []Column
-	}{
-		TableName:  c.Tables[0].TableName,
-		StructName: c.Tables[0].StructName,
-		Columns:    c.Tables[0].Columns,
-	})
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-
-	err = templates.ExecuteTemplate(os.Stdout, "select_by_id", struct {
-		TableName  string
-		StructName string
-		Columns    []Column
-	}{
-		TableName:  c.Tables[0].TableName,
-		StructName: c.Tables[0].StructName,
-		Columns:    c.Tables[0].Columns,
-	})
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-
-	err = templates.ExecuteTemplate(os.Stdout, "insert", struct {
-		TableName  string
-		StructName string
-		Columns    []Column
-	}{
-		TableName:  c.Tables[0].TableName,
-		StructName: c.Tables[0].StructName,
-		Columns:    c.Tables[0].Columns,
-	})
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-
-	err = templates.ExecuteTemplate(os.Stdout, "update", struct {
-		TableName  string
-		StructName string
-		Columns    []Column
-	}{
-		TableName:  c.Tables[0].TableName,
-		StructName: c.Tables[0].StructName,
-		Columns:    c.Tables[0].Columns,
-	})
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-
-	err = templates.ExecuteTemplate(os.Stdout, "delete", struct {
-		TableName  string
-		StructName string
-		Columns    []Column
-	}{
 		TableName:  c.Tables[0].TableName,
 		StructName: c.Tables[0].StructName,
 		Columns:    c.Tables[0].Columns,
