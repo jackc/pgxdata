@@ -75,7 +75,14 @@ func generateCmd(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	err = templates.ExecuteTemplate(os.Stdout, "row", struct {
+	file, err := os.Create(c.Tables[0].StructName + ".go")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	defer file.Close()
+
+	err = templates.ExecuteTemplate(file, "row", struct {
 		PkgName    string
 		TableName  string
 		StructName string
