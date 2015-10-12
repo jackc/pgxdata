@@ -14,7 +14,9 @@ import (
 )
 
 var dataTypeMap = map[string]string{
+	"bigint":            "Int64",
 	"integer":           "Int32",
+	"smallint":          "Int16",
 	"character varying": "String",
 	"date":              "Time",
 	"timestamp with time zone": "Time",

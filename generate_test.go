@@ -76,6 +76,10 @@ func TestInspectDatabase(t *testing.T) {
 					TableName:  "customer",
 					StructName: "CustomerRow",
 				},
+				{
+					TableName:  "widget",
+					StructName: "WidgetRow",
+				},
 			},
 			expected: []Table{
 				{
@@ -89,7 +93,6 @@ func TestInspectDatabase(t *testing.T) {
 							FieldName:       "ID",
 							GoType:          "Int32",
 						},
-
 						{
 							ColumnName:      "first_name",
 							DataType:        "character varying",
@@ -97,7 +100,6 @@ func TestInspectDatabase(t *testing.T) {
 							FieldName:       "FirstName",
 							GoType:          "String",
 						},
-
 						{
 							ColumnName:      "last_name",
 							DataType:        "character varying",
@@ -105,7 +107,6 @@ func TestInspectDatabase(t *testing.T) {
 							FieldName:       "LastName",
 							GoType:          "String",
 						},
-
 						{
 							ColumnName:      "birth_date",
 							DataType:        "date",
@@ -113,13 +114,39 @@ func TestInspectDatabase(t *testing.T) {
 							FieldName:       "BirthDate",
 							GoType:          "Time",
 						},
-
 						{
 							ColumnName:      "creation_time",
 							DataType:        "timestamp with time zone",
 							OrdinalPosition: 5,
 							FieldName:       "CreationTime",
 							GoType:          "Time",
+						},
+					},
+				},
+				{
+					TableName:  "widget",
+					StructName: "WidgetRow",
+					Columns: []Column{
+						{
+							ColumnName:      "id",
+							DataType:        "bigint",
+							OrdinalPosition: 1,
+							FieldName:       "ID",
+							GoType:          "Int64",
+						},
+						{
+							ColumnName:      "name",
+							DataType:        "character varying",
+							OrdinalPosition: 2,
+							FieldName:       "Name",
+							GoType:          "String",
+						},
+						{
+							ColumnName:      "weight",
+							DataType:        "smallint",
+							OrdinalPosition: 3,
+							FieldName:       "Weight",
+							GoType:          "Int16",
 						},
 					},
 				},
