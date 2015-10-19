@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -75,27 +76,20 @@ func generateCmd(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	file, err := os.Create(c.Tables[0].StructName + ".go")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-	defer file.Close()
+	for _, t := range c.Tables {
+		file, err := os.Create(t.StructName + ".go")
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
 
-	err = templates.ExecuteTemplate(file, "row", struct {
-		PkgName    string
-		TableName  string
-		StructName string
-		Columns    []Column
-	}{
-		PkgName:    c.Package,
-		TableName:  c.Tables[0].TableName,
-		StructName: c.Tables[0].StructName,
-		Columns:    c.Tables[0].Columns,
-	})
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		err = writeTableCrud(file, templates, c.Package, t)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+
+		file.Close()
 	}
 }
 
@@ -103,6 +97,20 @@ type Queryer interface {
 	Query(sql string, args ...interface{}) (*pgx.Rows, error)
 	QueryRow(sql string, args ...interface{}) *pgx.Row
 	Exec(sql string, arguments ...interface{}) (pgx.CommandTag, error)
+}
+
+func writeTableCrud(w io.Writer, templates *template.Template, pkgName string, table Table) error {
+	return templates.ExecuteTemplate(w, "row", struct {
+		PkgName    string
+		TableName  string
+		StructName string
+		Columns    []Column
+	}{
+		PkgName:    pkgName,
+		TableName:  table.TableName,
+		StructName: table.StructName,
+		Columns:    table.Columns,
+	})
 }
 
 func inspectDatabase(db Queryer, tables []Table) error {
