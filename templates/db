@@ -2,10 +2,14 @@
 package {{.PkgName}}
 
 import (
+  "errors"
+
   "github.com/jackc/pgx"
 )
 
 const VERSION = "{{.Version}}"
+
+var ErrNotFound = errors.New("not found")
 
 type Queryer interface {
   Query(sql string, args ...interface{}) (*pgx.Rows, error)

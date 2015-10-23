@@ -9,4 +9,6 @@ Create a test database and populate it with the test schema.
 
 Set PG* envvars when running tests to pass connection information to tests.
 
-    PGHOST=/var/run/postgresql go test
+    PGHOST=/var/run/postgresql go test ./...
+
+Regenerate the test app in test/data as needed (probably need to automate this).

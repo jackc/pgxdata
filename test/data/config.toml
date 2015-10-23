@@ -1,8 +1,8 @@
-package = "foo"
+package = "data"
 
 [database]
 host = "/private/tmp"
-database = "crud"
+database = "pgx_crud"
 
 [[tables]]
 table_name = "customer"

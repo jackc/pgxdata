@@ -8,7 +8,9 @@ where id=$1`
   err := db.QueryRow(sql, id).Scan(
 {{range .Columns}}&row.{{.FieldName}},
     {{end}})
-  if err != nil {
+  if err == pgx.ErrNoRows {
+    return nil, ErrNotFound
+  } else if err != nil {
     return nil, err
   }
 
