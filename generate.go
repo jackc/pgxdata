@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -50,15 +49,8 @@ func generateCmd(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	templates, err := template.ParseGlob(filepath.Join(appArgs.templatesPath, "*"))
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-
 	var c Config
-
-	_, err = toml.DecodeFile("config.toml", &c)
+	_, err := toml.DecodeFile("config.toml", &c)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -76,6 +68,7 @@ func generateCmd(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	templates := loadTemplates()
 	for _, t := range c.Tables {
 		file, err := os.Create(t.StructName + ".go")
 		if err != nil {

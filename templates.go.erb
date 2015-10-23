@@ -1,0 +1,27 @@
+package main
+
+import (
+	"encoding/base64"
+	"text/template"
+)
+
+func loadTemplates() *template.Template {
+	templates := template.New("base")
+
+	var decoded []byte
+	var err error
+
+	<% templates.each do |name, content| %>
+		decoded, err = base64.StdEncoding.DecodeString(`<%= Base64.strict_encode64(content) %>`)
+		if err != nil {
+			panic("Unable to decode template")
+		}
+
+		_, err = templates.New(`<%= name %>`).Parse(string(decoded))
+		if err != nil {
+			panic("Unable to parse template")
+		}
+	<% end %>
+
+	return templates
+}

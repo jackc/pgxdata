@@ -56,11 +56,7 @@ func initCmd(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	templates, err := template.ParseGlob(filepath.Join(appArgs.templatesPath, "*"))
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
+	templates := loadTemplates()
 
 	files := []struct {
 		path string
