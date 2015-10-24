@@ -4,11 +4,11 @@
 
 Create a test database and populate it with the test schema.
 
-    createdb pgx_crud
-    psql pgx_crud -f testdata/structure.sql
+    createdb pgxdata
+    psql pgxdata -f test/structure.sql
 
 Set PG* envvars when running tests to pass connection information to tests.
 
-    PGHOST=/var/run/postgresql go test ./...
+    PGHOST=/var/run/postgresql rake
 
 Regenerate the test app in test/data as needed (probably need to automate this).

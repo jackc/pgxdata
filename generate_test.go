@@ -41,7 +41,7 @@ func createConnPool() (*pgx.ConnPool, error) {
 	}
 
 	if config.Database == "" {
-		config.Database = "pgx_crud"
+		config.Database = "pgxdata"
 	}
 
 	config.TLSConfig = nil
@@ -178,7 +178,7 @@ func TestInspectDatabase(t *testing.T) {
 			}
 
 			if len(expectedTable.Columns) != len(inputTable.Columns) {
-				t.Errorf("%d:%d. expected %d tables, got %d", testIdx, tableIdx, len(expectedTable.Columns), len(inputTable.Columns))
+				t.Errorf("%d:%d. expected %d columns, got %d", testIdx, tableIdx, len(expectedTable.Columns), len(inputTable.Columns))
 				continue
 			}
 

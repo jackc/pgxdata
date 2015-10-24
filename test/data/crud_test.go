@@ -3,7 +3,7 @@ package data_test
 import (
 	"testing"
 
-	"github.com/jackc/pgx-crud/test/data"
+	"github.com/jackc/pgxdata/test/data"
 )
 
 func TestCount(t *testing.T) {
