@@ -13,6 +13,23 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type boxType struct {
+	Name      string
+	ValueType string
+}
+
+type intBoxType struct {
+	Name    string
+	BitSize int
+}
+
+type initData struct {
+	PkgName     string
+	Version     string
+	BoxTypes    []boxType
+	IntBoxTypes []intBoxType
+}
+
 var dataTypeMap = map[string]string{
 	"bigint":            "Int64",
 	"integer":           "Int32",
@@ -69,6 +86,40 @@ func generateCmd(cmd *cobra.Command, args []string) {
 	}
 
 	templates := loadTemplates()
+
+	supportData := initData{
+		PkgName: c.Package,
+		Version: VERSION,
+		BoxTypes: []boxType{
+			{Name: "Bool", ValueType: "bool"},
+			{Name: "Int16", ValueType: "int16"},
+			{Name: "Int32", ValueType: "int32"},
+			{Name: "Int64", ValueType: "int64"},
+			{Name: "String", ValueType: "string"},
+			{Name: "Time", ValueType: "time.Time"},
+		},
+		IntBoxTypes: []intBoxType{
+			{Name: "Int16", BitSize: 16},
+			{Name: "Int32", BitSize: 32},
+			{Name: "Int64", BitSize: 64},
+		},
+	}
+
+	supportFiles := []struct {
+		path string
+		tmpl *template.Template
+	}{
+		{"attribute.go", templates.Lookup("attribute")},
+		{"db.go", templates.Lookup("db")},
+	}
+	for _, f := range supportFiles {
+		err := writeSupportFile(f.path, f.tmpl, supportData)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+	}
+
 	for _, t := range c.Tables {
 		file, err := os.Create(t.StructName + ".go")
 		if err != nil {
@@ -152,4 +203,14 @@ func pgTypeToGoType(pg string) string {
 	} else {
 		return "String"
 	}
+}
+
+func writeSupportFile(path string, tmpl *template.Template, data initData) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	return tmpl.Execute(file, data)
 }

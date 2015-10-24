@@ -9,23 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type boxType struct {
-	Name      string
-	ValueType string
-}
-
-type intBoxType struct {
-	Name    string
-	BitSize int
-}
-
-type initData struct {
-	PkgName     string
-	Version     string
-	BoxTypes    []boxType
-	IntBoxTypes []intBoxType
-}
-
 func initCmd(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
 		fmt.Fprintln(os.Stderr, "init requires exactly one argument")

@@ -1,13 +1,9 @@
 package = "data"
 
 [database]
-host = "/private/tmp"
+host = "/var/run/postgresql"
 database = "pgx_crud"
 
 [[tables]]
 table_name = "customer"
 struct_name = "CustomerRow"
-
-[[tables]]
-table_name = "widget"
-struct_name = "WidgetRow"
