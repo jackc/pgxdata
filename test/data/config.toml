@@ -2,7 +2,7 @@ package = "data"
 
 [database]
 host = "/var/run/postgresql"
-database = "pgx_crud"
+database = "pgxdata"
 
 [[tables]]
 table_name = "customer"
