@@ -6,3 +6,10 @@ create table customer (
   birth_date date,
   creation_time timestamptz not null default now()
 );
+
+drop table if exists widget;
+create table widget (
+  id bigserial primary key,
+  name varchar not null,
+  weight smallint not null
+);
