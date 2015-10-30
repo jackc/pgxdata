@@ -226,3 +226,22 @@ func TestPgCaseToGoCase(t *testing.T) {
 		}
 	}
 }
+
+func TestGoCaseToFileCase(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"Widget", "widget"},
+		{"WidgetRow", "widget_row"},
+	}
+
+	for i, tt := range tests {
+		actual := goCaseToFileCase(tt.input)
+		if actual != tt.expected {
+			t.Errorf(`%d. Given "%s", expected "%s", but got "%s"`, i, tt.input, tt.expected, actual)
+		}
+	}
+}

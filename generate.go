@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"text/template"
+	"unicode"
 
 	"github.com/BurntSushi/toml"
 	"github.com/jackc/pgx"
@@ -121,7 +122,7 @@ func generateCmd(cmd *cobra.Command, args []string) {
 	}
 
 	for _, t := range c.Tables {
-		file, err := os.Create(t.StructName + ".go")
+		file, err := os.Create(goCaseToFileCase(t.StructName) + ".go")
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
@@ -192,6 +193,19 @@ func pgCaseToGoCase(pg string) string {
 		} else {
 			buf.WriteString(strings.Title(s))
 		}
+	}
+
+	return buf.String()
+}
+
+func goCaseToFileCase(g string) string {
+	buf := &bytes.Buffer{}
+
+	for i, r := range g {
+		if unicode.IsUpper(r) && i != 0 {
+			buf.WriteRune('_')
+		}
+		buf.WriteRune(unicode.ToLower(r))
 	}
 
 	return buf.String()
