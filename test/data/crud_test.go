@@ -79,15 +79,15 @@ func TestSelectAll(t *testing.T) {
 	}
 }
 
-func TestSelectByID(t *testing.T) {
+func TestSelectByPK(t *testing.T) {
 	t.Parallel()
 
 	tx := begin(t)
 	defer tx.Rollback()
 
-	customer, err := data.SelectCustomerByID(tx, -1)
+	customer, err := data.SelectCustomerByPK(tx, -1)
 	if err != data.ErrNotFound {
-		t.Fatalf("Expected SelectCustomerByID to return err data.ErrNotFound but it was: %v", err)
+		t.Fatalf("Expected SelectCustomerByPK to return err data.ErrNotFound but it was: %v", err)
 	}
 
 	insertedRow := data.Customer{
@@ -101,9 +101,9 @@ func TestSelectByID(t *testing.T) {
 		t.Fatalf("InsertCustomer unexpectedly failed: %v", err)
 	}
 
-	customer, err = data.SelectCustomerByID(tx, insertedRow.ID.Value)
+	customer, err = data.SelectCustomerByPK(tx, insertedRow.ID.Value)
 	if err != nil {
-		t.Fatalf("SelectCustomerByID unexpectedly failed: %v", err)
+		t.Fatalf("SelectCustomerByPK unexpectedly failed: %v", err)
 	}
 
 	if customer.FirstName != insertedRow.FirstName {
@@ -130,9 +130,9 @@ func TestInsert(t *testing.T) {
 		t.Fatalf("InsertCustomer unexpectedly failed: %v", err)
 	}
 
-	customer, err := data.SelectCustomerByID(tx, insertedRow.ID.Value)
+	customer, err := data.SelectCustomerByPK(tx, insertedRow.ID.Value)
 	if err != nil {
-		t.Fatalf("SelectCustomerByID unexpectedly failed: %v", err)
+		t.Fatalf("SelectCustomerByPK unexpectedly failed: %v", err)
 	}
 
 	if customer.FirstName != insertedRow.FirstName {
@@ -160,9 +160,9 @@ func TestInsertOverridingPK(t *testing.T) {
 		t.Fatalf("InsertCustomer unexpectedly failed: %v", err)
 	}
 
-	customer, err := data.SelectCustomerByID(tx, -2)
+	customer, err := data.SelectCustomerByPK(tx, -2)
 	if err != nil {
-		t.Fatalf("SelectCustomerByID unexpectedly failed: %v", err)
+		t.Fatalf("SelectCustomerByPK unexpectedly failed: %v", err)
 	}
 
 	if customer.FirstName != insertedRow.FirstName {
@@ -189,9 +189,9 @@ func TestUpdate(t *testing.T) {
 		t.Fatalf("InsertCustomer unexpectedly failed: %v", err)
 	}
 
-	customer, err := data.SelectCustomerByID(tx, insertedRow.ID.Value)
+	customer, err := data.SelectCustomerByPK(tx, insertedRow.ID.Value)
 	if err != nil {
-		t.Fatalf("SelectCustomerByID unexpectedly failed: %v", err)
+		t.Fatalf("SelectCustomerByPK unexpectedly failed: %v", err)
 	}
 
 	if customer.FirstName != insertedRow.FirstName {
@@ -218,9 +218,9 @@ func TestDelete(t *testing.T) {
 		t.Fatalf("InsertCustomer unexpectedly failed: %v", err)
 	}
 
-	_, err = data.SelectCustomerByID(tx, insertedRow.ID.Value)
+	_, err = data.SelectCustomerByPK(tx, insertedRow.ID.Value)
 	if err != nil {
-		t.Fatalf("SelectCustomerByID unexpectedly failed: %v", err)
+		t.Fatalf("SelectCustomerByPK unexpectedly failed: %v", err)
 	}
 
 	err = data.DeleteCustomer(tx, insertedRow.ID.Value)
@@ -228,8 +228,8 @@ func TestDelete(t *testing.T) {
 		t.Fatalf("DeleteCustomer unexpectedly failed: %v", err)
 	}
 
-	_, err = data.SelectCustomerByID(tx, insertedRow.ID.Value)
+	_, err = data.SelectCustomerByPK(tx, insertedRow.ID.Value)
 	if err != data.ErrNotFound {
-		t.Fatalf("Expected SelectCustomerByID to return err data.ErrNotFound but it was: %v", err)
+		t.Fatalf("Expected SelectCustomerByPK to return err data.ErrNotFound but it was: %v", err)
 	}
 }

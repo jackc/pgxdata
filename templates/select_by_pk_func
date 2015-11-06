@@ -1,4 +1,4 @@
-func Select{{.StructName}}ByID(db Queryer, id int32) (*{{.StructName}}, error) {
+func Select{{.StructName}}ByPK(db Queryer, id int32) (*{{.StructName}}, error) {
   sql := `select{{ range $i, $column := .Columns}}{{if $i}},{{end}}
   "{{$column.ColumnName}}"{{end}}
 from "{{.TableName}}"

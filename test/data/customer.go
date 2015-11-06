@@ -57,7 +57,7 @@ from "customer"`
   return rows, nil
 }
 
-func SelectCustomerByID(db Queryer, id int32) (*Customer, error) {
+func SelectCustomerByPK(db Queryer, id int32) (*Customer, error) {
   sql := `select
   "id",
   "first_name",

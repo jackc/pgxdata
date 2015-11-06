@@ -13,7 +13,7 @@ type {{.StructName}} struct {
 
 {{template "count_func" .}}
 {{template "select_all_func" .}}
-{{template "select_by_id_func" .}}
+{{template "select_by_pk_func" .}}
 {{template "insert_func" .}}
 {{template "update_func" .}}
 {{template "delete_func" .}}
