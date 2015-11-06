@@ -8,8 +8,8 @@ func Insert{{.StructName}}(db Queryer, row *{{.StructName}}) error {
 
   sql := `insert into "{{.TableName}}"(` + strings.Join(columns, ", ") + `)
 values(` + strings.Join(values, ",") + `)
-returning id
+returning {{ range $i, $column := .PrimaryKeyColumns}}{{if $i}}, {{end}}"{{$column.ColumnName}}"{{end}}
   `
 
-  return db.QueryRow(sql, args...).Scan(&row.ID)
+  return db.QueryRow(sql, args...).Scan({{ range $i, $column := .PrimaryKeyColumns}}{{if $i}}, {{end}}&row.{{$column.FieldName}}{{end}})
 }

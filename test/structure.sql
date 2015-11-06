@@ -13,3 +13,17 @@ create table widget (
   name varchar not null,
   weight smallint not null
 );
+
+drop table if exists part;
+create table part (
+  code varchar primary key,
+  description text not null
+);
+
+drop table if exists semester;
+create table semester (
+  year smallint,
+  season varchar,
+  description text not null,
+  primary key(year, season)
+);

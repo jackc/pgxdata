@@ -31,13 +31,22 @@ type initData struct {
 	IntBoxTypes []intBoxType
 }
 
-var dataTypeMap = map[string]string{
+var pgToBoxTypeMap = map[string]string{
 	"bigint":            "Int64",
 	"integer":           "Int32",
 	"smallint":          "Int16",
 	"character varying": "String",
 	"date":              "Time",
 	"timestamp with time zone": "Time",
+}
+
+var pgToGoTypeMap = map[string]string{
+	"bigint":            "int64",
+	"integer":           "int32",
+	"smallint":          "int16",
+	"character varying": "string",
+	"date":              "time.Time",
+	"timestamp with time zone": "time.Time",
 }
 
 type Config struct {
@@ -52,13 +61,18 @@ type Column struct {
 	OrdinalPosition int32
 
 	FieldName string
-	GoType    string
+	GoBoxType string
+
+	VarName string
+	GoType  string
 }
 
 type Table struct {
-	TableName  string `toml:"table_name"`
-	StructName string `toml:"struct_name"`
-	Columns    []Column
+	TableName             string   `toml:"table_name"`
+	StructName            string   `toml:"struct_name"`
+	PrimaryKeyColumnNames []string `toml:"primary_key"`
+	Columns               []Column
+	PrimaryKeyColumns     []*Column
 }
 
 func generateCmd(cmd *cobra.Command, args []string) {
@@ -153,15 +167,17 @@ type Queryer interface {
 
 func writeTableCrud(w io.Writer, templates *template.Template, pkgName string, table Table) error {
 	return templates.ExecuteTemplate(w, "row", struct {
-		PkgName    string
-		TableName  string
-		StructName string
-		Columns    []Column
+		PkgName           string
+		TableName         string
+		StructName        string
+		Columns           []Column
+		PrimaryKeyColumns []*Column
 	}{
-		PkgName:    pkgName,
-		TableName:  table.TableName,
-		StructName: table.StructName,
-		Columns:    table.Columns,
+		PkgName:           pkgName,
+		TableName:         table.TableName,
+		StructName:        table.StructName,
+		Columns:           table.Columns,
+		PrimaryKeyColumns: table.PrimaryKeyColumns,
 	})
 }
 
@@ -176,8 +192,11 @@ func inspectDatabase(db Queryer, tables []Table) error {
 		for rows.Next() {
 			var c Column
 			rows.Scan(&c.ColumnName, &c.DataType, &c.OrdinalPosition)
-			c.FieldName = pgCaseToGoCase(c.ColumnName)
+			c.FieldName = pgCaseToGoPublicCase(c.ColumnName)
+			c.GoBoxType = pgTypeToGoBoxType(c.DataType)
+			c.VarName = pgCaseToGoPrivateCase(c.ColumnName)
 			c.GoType = pgTypeToGoType(c.DataType)
+
 			columns = append(columns, c)
 		}
 
@@ -186,12 +205,30 @@ func inspectDatabase(db Queryer, tables []Table) error {
 		}
 
 		tables[i].Columns = columns
+
+		if len(tables[i].PrimaryKeyColumnNames) == 0 {
+			tables[i].PrimaryKeyColumnNames = []string{"id"}
+		}
+
+		for _, columnName := range tables[i].PrimaryKeyColumnNames {
+			var found bool
+			for j := range tables[i].Columns {
+				if tables[i].Columns[j].ColumnName == columnName {
+					tables[i].PrimaryKeyColumns = append(tables[i].PrimaryKeyColumns, &tables[i].Columns[j])
+					found = true
+					break
+				}
+			}
+			if !found {
+				return fmt.Errorf("table %s primary_key column %s not found", tables[i].TableName, columnName)
+			}
+		}
 	}
 
 	return nil
 }
 
-func pgCaseToGoCase(pg string) string {
+func pgCaseToGoPublicCase(pg string) string {
 	parts := strings.Split(pg, "_")
 	buf := &bytes.Buffer{}
 	for _, s := range parts {
@@ -199,6 +236,24 @@ func pgCaseToGoCase(pg string) string {
 			buf.WriteString("ID")
 		} else {
 			buf.WriteString(strings.Title(s))
+		}
+	}
+
+	return buf.String()
+}
+
+func pgCaseToGoPrivateCase(pg string) string {
+	parts := strings.Split(pg, "_")
+	buf := &bytes.Buffer{}
+	for i, s := range parts {
+		if i == 0 {
+			buf.WriteString(strings.ToLower(s))
+		} else {
+			if s == "id" {
+				buf.WriteString("ID")
+			} else {
+				buf.WriteString(strings.Title(s))
+			}
 		}
 	}
 
@@ -218,11 +273,19 @@ func goCaseToFileCase(g string) string {
 	return buf.String()
 }
 
-func pgTypeToGoType(pg string) string {
-	if t, ok := dataTypeMap[pg]; ok {
+func pgTypeToGoBoxType(pg string) string {
+	if t, ok := pgToBoxTypeMap[pg]; ok {
 		return t
 	} else {
 		return "String"
+	}
+}
+
+func pgTypeToGoType(pg string) string {
+	if t, ok := pgToGoTypeMap[pg]; ok {
+		return t
+	} else {
+		return "string"
 	}
 }
 

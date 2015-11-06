@@ -2,11 +2,17 @@ package main
 
 import (
 	"encoding/base64"
+	"fmt"
 	"text/template"
 )
 
+func pkPlaceholder(n int) string {
+	return fmt.Sprintf("$%d", n+1)
+}
+
 func loadTemplates() *template.Template {
-	templates := template.New("base")
+	funcMap := template.FuncMap{"pkPlaceholder": pkPlaceholder}
+	templates := template.New("base").Funcs(funcMap)
 
 	var decoded []byte
 	var err error
@@ -19,6 +25,7 @@ func loadTemplates() *template.Template {
 
 		_, err = templates.New(`<%= name %>`).Parse(string(decoded))
 		if err != nil {
+			fmt.Println(string(decoded))
 			panic("Unable to parse template")
 		}
 	<% end %>

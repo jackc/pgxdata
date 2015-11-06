@@ -4,7 +4,7 @@ require "fileutils"
 require "rake/clean"
 
 CLEAN.include "templates.go"
-CLEAN.include FileList["test/data/*.go"].exclude("*_test.go")
+CLEAN.include FileList["test/data/*.go"].exclude("test/data/*_test.go")
 CLOBBER.include "build/*"
 
 file "templates.go" => ["templates.go.erb", *FileList["templates/*"]] do |t|

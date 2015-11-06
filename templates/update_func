@@ -1,4 +1,7 @@
-func Update{{.StructName}}(db Queryer, id int32, row *{{.StructName}}) error {
+func Update{{.StructName}}(db Queryer{{range .PrimaryKeyColumns}},
+  {{.VarName}} {{.GoType}}{{end}},
+  row *{{.StructName}},
+) error {
   sets := make([]string, 0, {{len .Columns}})
   args := pgx.QueryArgs(make([]interface{}, 0, {{len .Columns}}))
 
@@ -9,7 +12,7 @@ func Update{{.StructName}}(db Queryer, id int32, row *{{.StructName}}) error {
     return nil
   }
 
-  sql := `update "{{.TableName}}" set ` + strings.Join(sets, ", ") + ` where id=` + args.Append(id)
+  sql := `update "{{.TableName}}" set ` + strings.Join(sets, ", ") + ` where ` {{ range $i, $column := .PrimaryKeyColumns}} + `{{if $i}} and {{end}}"{{$column.ColumnName}}"=` + args.Append({{$column.VarName}}){{end}}
 
   commandTag, err := db.Exec(sql, args...)
   if err != nil {

@@ -1,7 +1,11 @@
-func Delete{{.StructName}}(db Queryer, id int32) error {
-  sql := `delete from "{{.TableName}}" where id=$1`
+func Delete{{.StructName}}(db Queryer{{range .PrimaryKeyColumns}},
+  {{.VarName}} {{.GoType}}{{end}},
+) error {
+  args := pgx.QueryArgs(make([]interface{}, 0, {{len .PrimaryKeyColumns}}))
 
-  commandTag, err := db.Exec(sql, id)
+  sql := `delete from "{{.TableName}}" where ` {{ range $i, $column := .PrimaryKeyColumns}} + `{{if $i}} and {{end}}"{{$column.ColumnName}}"=` + args.Append({{$column.VarName}}){{end}}
+
+  commandTag, err := db.Exec(sql, args...)
   if err != nil {
     return err
   }

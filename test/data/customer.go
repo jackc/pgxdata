@@ -57,7 +57,10 @@ from "customer"`
   return rows, nil
 }
 
-func SelectCustomerByPK(db Queryer, id int32) (*Customer, error) {
+func SelectCustomerByPK(
+  db Queryer,
+  id int32,
+) (*Customer, error) {
   sql := `select
   "id",
   "first_name",
@@ -65,10 +68,10 @@ func SelectCustomerByPK(db Queryer, id int32) (*Customer, error) {
   "birth_date",
   "creation_time"
 from "customer"
-where id=$1`
+where "id"=$1`
 
   var row Customer
-  err := db.QueryRow(sql, id).Scan(
+  err := db.QueryRow(sql , id).Scan(
 &row.ID,
     &row.FirstName,
     &row.LastName,
@@ -98,13 +101,16 @@ func InsertCustomer(db Queryer, row *Customer) error {
 
   sql := `insert into "customer"(` + strings.Join(columns, ", ") + `)
 values(` + strings.Join(values, ",") + `)
-returning id
+returning "id"
   `
 
   return db.QueryRow(sql, args...).Scan(&row.ID)
 }
 
-func UpdateCustomer(db Queryer, id int32, row *Customer) error {
+func UpdateCustomer(db Queryer,
+  id int32,
+  row *Customer,
+) error {
   sets := make([]string, 0, 5)
   args := pgx.QueryArgs(make([]interface{}, 0, 5))
 
@@ -119,7 +125,7 @@ func UpdateCustomer(db Queryer, id int32, row *Customer) error {
     return nil
   }
 
-  sql := `update "customer" set ` + strings.Join(sets, ", ") + ` where id=` + args.Append(id)
+  sql := `update "customer" set ` + strings.Join(sets, ", ") + ` where `  + `"id"=` + args.Append(id)
 
   commandTag, err := db.Exec(sql, args...)
   if err != nil {
@@ -131,10 +137,14 @@ func UpdateCustomer(db Queryer, id int32, row *Customer) error {
   return nil
 }
 
-func DeleteCustomer(db Queryer, id int32) error {
-  sql := `delete from "customer" where id=$1`
+func DeleteCustomer(db Queryer,
+  id int32,
+) error {
+  args := pgx.QueryArgs(make([]interface{}, 0, 1))
 
-  commandTag, err := db.Exec(sql, id)
+  sql := `delete from "customer" where `  + `"id"=` + args.Append(id)
+
+  commandTag, err := db.Exec(sql, args...)
   if err != nil {
     return err
   }

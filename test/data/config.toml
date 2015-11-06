@@ -3,3 +3,17 @@ package = "data"
 [[tables]]
 table_name = "customer"
 struct_name = "Customer"
+
+[[tables]]
+table_name = "widget"
+struct_name = "Widget"
+
+[[tables]]
+table_name = "part"
+struct_name = "Part"
+primary_key = ["code"]
+
+[[tables]]
+table_name = "semester"
+struct_name = "Semester"
+primary_key = ["year", "season"]

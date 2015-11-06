@@ -8,7 +8,7 @@ import (
 )
 
 type {{.StructName}} struct {
-{{range .Columns}}  {{.FieldName}} {{.GoType}}
+{{range .Columns}}  {{.FieldName}} {{.GoBoxType}}
 {{end}}}
 
 {{template "count_func" .}}

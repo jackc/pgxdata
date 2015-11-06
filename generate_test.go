@@ -91,35 +91,35 @@ func TestInspectDatabase(t *testing.T) {
 							DataType:        "integer",
 							OrdinalPosition: 1,
 							FieldName:       "ID",
-							GoType:          "Int32",
+							GoBoxType:       "Int32",
 						},
 						{
 							ColumnName:      "first_name",
 							DataType:        "character varying",
 							OrdinalPosition: 2,
 							FieldName:       "FirstName",
-							GoType:          "String",
+							GoBoxType:       "String",
 						},
 						{
 							ColumnName:      "last_name",
 							DataType:        "character varying",
 							OrdinalPosition: 3,
 							FieldName:       "LastName",
-							GoType:          "String",
+							GoBoxType:       "String",
 						},
 						{
 							ColumnName:      "birth_date",
 							DataType:        "date",
 							OrdinalPosition: 4,
 							FieldName:       "BirthDate",
-							GoType:          "Time",
+							GoBoxType:       "Time",
 						},
 						{
 							ColumnName:      "creation_time",
 							DataType:        "timestamp with time zone",
 							OrdinalPosition: 5,
 							FieldName:       "CreationTime",
-							GoType:          "Time",
+							GoBoxType:       "Time",
 						},
 					},
 				},
@@ -132,21 +132,21 @@ func TestInspectDatabase(t *testing.T) {
 							DataType:        "bigint",
 							OrdinalPosition: 1,
 							FieldName:       "ID",
-							GoType:          "Int64",
+							GoBoxType:       "Int64",
 						},
 						{
 							ColumnName:      "name",
 							DataType:        "character varying",
 							OrdinalPosition: 2,
 							FieldName:       "Name",
-							GoType:          "String",
+							GoBoxType:       "String",
 						},
 						{
 							ColumnName:      "weight",
 							DataType:        "smallint",
 							OrdinalPosition: 3,
 							FieldName:       "Weight",
-							GoType:          "Int16",
+							GoBoxType:       "Int16",
 						},
 					},
 				},
@@ -198,15 +198,15 @@ func TestInspectDatabase(t *testing.T) {
 				if expectedColumn.FieldName != inputColumn.FieldName {
 					t.Errorf("%d:%d:%d. expected FieldName %s, got %s", testIdx, tableIdx, columnIdx, expectedColumn.FieldName, inputColumn.FieldName)
 				}
-				if expectedColumn.GoType != inputColumn.GoType {
-					t.Errorf("%d:%d:%d. expected GoType %s, got %s", testIdx, tableIdx, columnIdx, expectedColumn.GoType, inputColumn.GoType)
+				if expectedColumn.GoBoxType != inputColumn.GoBoxType {
+					t.Errorf("%d:%d:%d. expected GoBoxType %s, got %s", testIdx, tableIdx, columnIdx, expectedColumn.GoBoxType, inputColumn.GoBoxType)
 				}
 			}
 		}
 	}
 }
 
-func TestPgCaseToGoCase(t *testing.T) {
+func TestPgCaseToGoPublicCase(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -220,7 +220,28 @@ func TestPgCaseToGoCase(t *testing.T) {
 	}
 
 	for i, tt := range tests {
-		actual := pgCaseToGoCase(tt.input)
+		actual := pgCaseToGoPublicCase(tt.input)
+		if actual != tt.expected {
+			t.Errorf(`%d. Given "%s", expected "%s", but got "%s"`, i, tt.input, tt.expected, actual)
+		}
+	}
+}
+
+func TestPgCaseToGoPrivateCase(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"first_name", "firstName"},
+		{"id", "id"},
+		{"person_id", "personID"},
+		{"person_ideal", "personIdeal"},
+	}
+
+	for i, tt := range tests {
+		actual := pgCaseToGoPrivateCase(tt.input)
 		if actual != tt.expected {
 			t.Errorf(`%d. Given "%s", expected "%s", but got "%s"`, i, tt.input, tt.expected, actual)
 		}
