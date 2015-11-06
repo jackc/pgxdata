@@ -41,7 +41,7 @@ func createConnPool() (*pgx.ConnPool, error) {
 	}
 
 	if config.Database == "" {
-		config.Database = "pgx_crud"
+		config.Database = "pgxdata"
 	}
 
 	config.TLSConfig = nil
