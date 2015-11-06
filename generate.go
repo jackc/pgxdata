@@ -68,7 +68,14 @@ func generateCmd(cmd *cobra.Command, args []string) {
 	}
 
 	var c Config
-	_, err := toml.DecodeFile("config.toml", &c)
+	var err error
+	c.Database, err = pgx.ParseEnvLibpq()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	_, err = toml.DecodeFile("config.toml", &c)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

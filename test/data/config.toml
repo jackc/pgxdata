@@ -1,9 +1,5 @@
 package = "data"
 
-[database]
-host = "/var/run/postgresql"
-database = "pgxdata"
-
 [[tables]]
 table_name = "customer"
 struct_name = "CustomerRow"
