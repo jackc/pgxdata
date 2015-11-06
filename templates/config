@@ -1,12 +1,14 @@
 package = "{{.PkgName}}"
 
-[database]
-host = "127.0.0.1"
-port = 5432
-database = "myapp_development"
-user = "myuser"
-password = "secret"
+# Database connection information can be specified here or in PG* environment variables
+#
+# [database]
+# host = "127.0.0.1"
+# port = 5432
+# database = "myapp_development"
+# user = "myuser"
+# password = "secret"
 
 [[tables]]
 table_name = "customer"
-# struct_name = "CustomerRow"
+# struct_name = "Customer"
