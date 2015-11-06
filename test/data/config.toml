@@ -2,4 +2,4 @@ package = "data"
 
 [[tables]]
 table_name = "customer"
-struct_name = "CustomerRow"
+struct_name = "Customer"

@@ -7,7 +7,7 @@ import (
   "github.com/jackc/pgx"
 )
 
-type CustomerRow struct {
+type Customer struct {
   ID Int32
   FirstName String
   LastName String
@@ -15,14 +15,14 @@ type CustomerRow struct {
   CreationTime Time
 }
 
-func CountCustomerRow(db Queryer) (int64, error) {
+func CountCustomer(db Queryer) (int64, error) {
   var n int64
   sql := `select count(*) from "customer"`
   err := db.QueryRow(sql).Scan(&n)
   return n, err
 }
 
-func SelectAllCustomerRow(db Queryer) ([]CustomerRow, error) {
+func SelectAllCustomer(db Queryer) ([]Customer, error) {
   sql := `select
   "id",
   "first_name",
@@ -31,7 +31,7 @@ func SelectAllCustomerRow(db Queryer) ([]CustomerRow, error) {
   "creation_time"
 from "customer"`
 
-  var rows []CustomerRow
+  var rows []Customer
 
   dbRows, err := db.Query(sql)
   if err != nil {
@@ -39,7 +39,7 @@ from "customer"`
   }
 
   for dbRows.Next() {
-    var row CustomerRow
+    var row Customer
     dbRows.Scan(
 &row.ID,
     &row.FirstName,
@@ -57,7 +57,7 @@ from "customer"`
   return rows, nil
 }
 
-func SelectCustomerRowByID(db Queryer, id int32) (*CustomerRow, error) {
+func SelectCustomerByID(db Queryer, id int32) (*Customer, error) {
   sql := `select
   "id",
   "first_name",
@@ -67,7 +67,7 @@ func SelectCustomerRowByID(db Queryer, id int32) (*CustomerRow, error) {
 from "customer"
 where id=$1`
 
-  var row CustomerRow
+  var row Customer
   err := db.QueryRow(sql, id).Scan(
 &row.ID,
     &row.FirstName,
@@ -84,7 +84,7 @@ where id=$1`
   return &row, nil
 }
 
-func InsertCustomerRow(db Queryer, row *CustomerRow) error {
+func InsertCustomer(db Queryer, row *Customer) error {
   args := pgx.QueryArgs(make([]interface{}, 0, 5))
 
   var columns, values []string
@@ -104,7 +104,7 @@ returning id
   return db.QueryRow(sql, args...).Scan(&row.ID)
 }
 
-func UpdateCustomerRow(db Queryer, id int32, row *CustomerRow) error {
+func UpdateCustomer(db Queryer, id int32, row *Customer) error {
   sets := make([]string, 0, 5)
   args := pgx.QueryArgs(make([]interface{}, 0, 5))
 
@@ -131,7 +131,7 @@ func UpdateCustomerRow(db Queryer, id int32, row *CustomerRow) error {
   return nil
 }
 
-func DeleteCustomerRow(db Queryer, id int32) error {
+func DeleteCustomer(db Queryer, id int32) error {
   sql := `delete from "customer" where id=$1`
 
   commandTag, err := db.Exec(sql, id)
