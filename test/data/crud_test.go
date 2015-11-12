@@ -1,6 +1,7 @@
 package data_test
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/jackc/pgxdata/test/data"
@@ -443,5 +444,30 @@ func TestMappingOfRenamedField(t *testing.T) {
 
 	if customer.FName != insertedRow.FName {
 		t.Errorf("Expected FName to be %v, but it was %v", data.String{Value: "John", Status: data.Present}, customer.FName)
+	}
+}
+
+func TestByteaByteSliceMapping(t *testing.T) {
+	t.Parallel()
+
+	tx := begin(t)
+	defer tx.Rollback()
+
+	insertedRow := data.Blob{
+		Payload: data.Bytes{Value: []byte("Hello"), Status: data.Present},
+	}
+
+	err := data.InsertBlob(tx, &insertedRow)
+	if err != nil {
+		t.Fatalf("InsertBlob unexpectedly failed: %v", err)
+	}
+
+	blob, err := data.SelectBlobByPK(tx, insertedRow.ID.Value)
+	if err != nil {
+		t.Fatalf("SelectBlobByPK unexpectedly failed: %v", err)
+	}
+
+	if bytes.Compare(blob.Payload, insertedRow.Payload) != 0 {
+		t.Errorf("Expected Payload to be %v, but it was %v", insertedRow.Payload, blob.Payload)
 	}
 }
