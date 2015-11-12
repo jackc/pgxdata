@@ -67,10 +67,16 @@ type Column struct {
 	GoType  string
 }
 
+type ColumnConfig struct {
+	ColumnName string `toml:"column_name"`
+	FieldName  string `toml:"field_name"`
+}
+
 type Table struct {
-	TableName             string   `toml:"table_name"`
-	StructName            string   `toml:"struct_name"`
-	PrimaryKeyColumnNames []string `toml:"primary_key"`
+	TableName             string         `toml:"table_name"`
+	StructName            string         `toml:"struct_name"`
+	PrimaryKeyColumnNames []string       `toml:"primary_key"`
+	ColumnConfigs         []ColumnConfig `toml:"columns"`
 	Columns               []Column
 	PrimaryKeyColumns     []*Column
 }
@@ -221,6 +227,22 @@ func inspectDatabase(db Queryer, tables []Table) error {
 			}
 			if !found {
 				return fmt.Errorf("table %s primary_key column %s not found", tables[i].TableName, columnName)
+			}
+		}
+
+		for _, cc := range tables[i].ColumnConfigs {
+			var found bool
+			for j := range tables[i].Columns {
+				if tables[i].Columns[j].ColumnName == cc.ColumnName {
+					if cc.FieldName != "" {
+						tables[i].Columns[j].FieldName = cc.FieldName
+					}
+					found = true
+					break
+				}
+			}
+			if !found {
+				return fmt.Errorf("table %s column %s not found", tables[i].TableName, cc.ColumnName)
 			}
 		}
 	}

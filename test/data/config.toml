@@ -17,3 +17,11 @@ primary_key = ["code"]
 table_name = "semester"
 struct_name = "Semester"
 primary_key = ["year", "season"]
+
+[[tables]]
+table_name = "customer"
+struct_name = "RenamedFieldCustomer"
+
+  [[tables.columns]]
+  column_name = "first_name"
+  field_name = "FName"

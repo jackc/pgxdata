@@ -419,3 +419,29 @@ func TestDeleteWithCompositePK(t *testing.T) {
 		t.Fatalf("Expected SelectSemesterByPK to return err data.ErrNotFound but it was: %v", err)
 	}
 }
+
+func TestMappingOfRenamedField(t *testing.T) {
+	t.Parallel()
+
+	tx := begin(t)
+	defer tx.Rollback()
+
+	insertedRow := data.RenamedFieldCustomer{
+		FName:    data.String{Value: "John", Status: data.Present},
+		LastName: data.String{Value: "Smith", Status: data.Present},
+	}
+
+	err := data.InsertRenamedFieldCustomer(tx, &insertedRow)
+	if err != nil {
+		t.Fatalf("InsertRenamedFieldCustomer unexpectedly failed: %v", err)
+	}
+
+	customer, err := data.SelectRenamedFieldCustomerByPK(tx, insertedRow.ID.Value)
+	if err != nil {
+		t.Fatalf("SelectRenamedFieldCustomerByPK unexpectedly failed: %v", err)
+	}
+
+	if customer.FName != insertedRow.FName {
+		t.Errorf("Expected FName to be %v, but it was %v", data.String{Value: "John", Status: data.Present}, customer.FName)
+	}
+}
