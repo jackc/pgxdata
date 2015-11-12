@@ -110,7 +110,7 @@ func TestSelectByPK(t *testing.T) {
 		t.Errorf("Expected FirstName to be %v, but it was %v", data.String{Value: "John", Status: data.Present}, customer.FirstName)
 	}
 	if customer.LastName != insertedRow.LastName {
-		t.Errorf("Expected LastName to be %v, but it was %v", data.String{Value: "Smith", Status: data.Present}, customer.FirstName)
+		t.Errorf("Expected LastName to be %v, but it was %v", data.String{Value: "Smith", Status: data.Present}, customer.LastName)
 	}
 }
 
@@ -245,7 +245,7 @@ func TestInsert(t *testing.T) {
 		t.Errorf("Expected FirstName to be %v, but it was %v", data.String{Value: "John", Status: data.Present}, customer.FirstName)
 	}
 	if customer.LastName != insertedRow.LastName {
-		t.Errorf("Expected LastName to be %v, but it was %v", data.String{Value: "Smith", Status: data.Present}, customer.FirstName)
+		t.Errorf("Expected LastName to be %v, but it was %v", data.String{Value: "Smith", Status: data.Present}, customer.LastName)
 	}
 }
 
@@ -275,7 +275,7 @@ func TestInsertOverridingPK(t *testing.T) {
 		t.Errorf("Expected FirstName to be %v, but it was %v", data.String{Value: "John", Status: data.Present}, customer.FirstName)
 	}
 	if customer.LastName != insertedRow.LastName {
-		t.Errorf("Expected LastName to be %v, but it was %v", data.String{Value: "Smith", Status: data.Present}, customer.FirstName)
+		t.Errorf("Expected LastName to be %v, but it was %v", data.String{Value: "Smith", Status: data.Present}, customer.LastName)
 	}
 }
 
