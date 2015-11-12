@@ -7,7 +7,7 @@ import (
   "github.com/jackc/pgx"
 )
 
-const VERSION = "0.0.2"
+const PGXDATA_VERSION = "0.0.2"
 
 var ErrNotFound = errors.New("not found")
 
