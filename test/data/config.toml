@@ -25,3 +25,7 @@ struct_name = "RenamedFieldCustomer"
   [[tables.columns]]
   column_name = "first_name"
   field_name = "FName"
+
+[[tables]]
+table_name = "blob"
+struct_name = "Blob"

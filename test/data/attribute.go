@@ -11,29 +11,38 @@ import (
   "github.com/jackc/pgx"
 )
 
+type Status byte
+
 const (
-  Undefined = iota
-  Null      = iota
-  Present   = iota
+  Undefined Status = iota
+  Null
+  Present
 )
+
+func (s Status) String() string {
+  switch s {
+  case Undefined:
+    return "Undefined"
+  case Null:
+    return "Null"
+  case Present:
+    return "Present"
+  }
+
+  return "Invalid status"
+}
 
 
 type Bool struct {
   Value  bool
-  Status byte
+  Status Status
 }
 
 func (attr Bool) String() string {
-  switch attr.Status {
-  case Present:
+  if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
-  case Null:
-    return "null"
-  case Undefined:
-    return "undefined"
   }
-
-  panic("unreachable")
+  return attr.Status.String()
 }
 
 func (attr Bool) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
@@ -97,20 +106,14 @@ func (attr Bool) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
 
 type Int16 struct {
   Value  int16
-  Status byte
+  Status Status
 }
 
 func (attr Int16) String() string {
-  switch attr.Status {
-  case Present:
+  if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
-  case Null:
-    return "null"
-  case Undefined:
-    return "undefined"
   }
-
-  panic("unreachable")
+  return attr.Status.String()
 }
 
 func (attr Int16) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
@@ -174,20 +177,14 @@ func (attr Int16) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
 
 type Int32 struct {
   Value  int32
-  Status byte
+  Status Status
 }
 
 func (attr Int32) String() string {
-  switch attr.Status {
-  case Present:
+  if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
-  case Null:
-    return "null"
-  case Undefined:
-    return "undefined"
   }
-
-  panic("unreachable")
+  return attr.Status.String()
 }
 
 func (attr Int32) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
@@ -251,20 +248,14 @@ func (attr Int32) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
 
 type Int64 struct {
   Value  int64
-  Status byte
+  Status Status
 }
 
 func (attr Int64) String() string {
-  switch attr.Status {
-  case Present:
+  if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
-  case Null:
-    return "null"
-  case Undefined:
-    return "undefined"
   }
-
-  panic("unreachable")
+  return attr.Status.String()
 }
 
 func (attr Int64) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
@@ -328,20 +319,14 @@ func (attr Int64) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
 
 type String struct {
   Value  string
-  Status byte
+  Status Status
 }
 
 func (attr String) String() string {
-  switch attr.Status {
-  case Present:
+  if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
-  case Null:
-    return "null"
-  case Undefined:
-    return "undefined"
   }
-
-  panic("unreachable")
+  return attr.Status.String()
 }
 
 func (attr String) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
@@ -405,20 +390,14 @@ func (attr String) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
 
 type Time struct {
   Value  time.Time
-  Status byte
+  Status Status
 }
 
 func (attr Time) String() string {
-  switch attr.Status {
-  case Present:
+  if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
-  case Null:
-    return "null"
-  case Undefined:
-    return "undefined"
   }
-
-  panic("unreachable")
+  return attr.Status.String()
 }
 
 func (attr Time) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
@@ -483,7 +462,7 @@ func (attr Time) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
 
 type Bytes struct {
   Value  []byte
-  Status byte
+  Status Status
 }
 
 func (attr *Bytes) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
@@ -492,6 +471,17 @@ func (attr *Bytes) addUpdate(columnName string, sets *[]string, args *pgx.QueryA
       *sets = append(*sets, columnName+"="+args.Append(attr.Value))
     case Null:
       *sets = append(*sets, columnName+"="+args.Append(nil))
+  }
+}
+
+func (attr *Bytes) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
+  switch attr.Status {
+    case Present:
+      *sets = append(*sets, columnName)
+      *values = append(*values, args.Append(attr.Value))
+    case Null:
+      *sets = append(*sets, columnName)
+      *values = append(*values, args.Append(nil))
   }
 }
 

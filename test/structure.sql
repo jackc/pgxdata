@@ -27,3 +27,9 @@ create table semester (
   description text not null,
   primary key(year, season)
 );
+
+drop table if exists blob;
+create table blob (
+  id serial primary key,
+  payload bytea not null
+);

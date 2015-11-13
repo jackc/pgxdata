@@ -11,29 +11,38 @@ import (
   "github.com/jackc/pgx"
 )
 
+type Status byte
+
 const (
-  Undefined = iota
-  Null      = iota
-  Present   = iota
+  Undefined Status = iota
+  Null
+  Present
 )
+
+func (s Status) String() string {
+  switch s {
+  case Undefined:
+    return "Undefined"
+  case Null:
+    return "Null"
+  case Present:
+    return "Present"
+  }
+
+  return "Invalid status"
+}
 
 {{range .BoxTypes}}
 type {{.Name}} struct {
   Value  {{.ValueType}}
-  Status byte
+  Status Status
 }
 
 func (attr {{.Name}}) String() string {
-  switch attr.Status {
-  case Present:
+  if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
-  case Null:
-    return "null"
-  case Undefined:
-    return "undefined"
   }
-
-  panic("unreachable")
+  return attr.Status.String()
 }
 
 func (attr {{.Name}}) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
@@ -98,7 +107,7 @@ func (attr {{.Name}}) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
 
 type Bytes struct {
   Value  []byte
-  Status byte
+  Status Status
 }
 
 func (attr *Bytes) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
@@ -107,6 +116,17 @@ func (attr *Bytes) addUpdate(columnName string, sets *[]string, args *pgx.QueryA
       *sets = append(*sets, columnName+"="+args.Append(attr.Value))
     case Null:
       *sets = append(*sets, columnName+"="+args.Append(nil))
+  }
+}
+
+func (attr *Bytes) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
+  switch attr.Status {
+    case Present:
+      *sets = append(*sets, columnName)
+      *values = append(*values, args.Append(attr.Value))
+    case Null:
+      *sets = append(*sets, columnName)
+      *values = append(*values, args.Append(nil))
   }
 }
 

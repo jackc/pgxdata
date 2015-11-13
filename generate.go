@@ -38,6 +38,7 @@ var pgToBoxTypeMap = map[string]string{
 	"character varying": "String",
 	"date":              "Time",
 	"timestamp with time zone": "Time",
+	"bytea":                    "Bytes",
 }
 
 var pgToGoTypeMap = map[string]string{
@@ -47,6 +48,7 @@ var pgToGoTypeMap = map[string]string{
 	"character varying": "string",
 	"date":              "time.Time",
 	"timestamp with time zone": "time.Time",
+	"bytea":                    "[]byte",
 }
 
 type Config struct {
