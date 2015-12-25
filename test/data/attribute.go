@@ -48,21 +48,16 @@ func (attr *Bool) String() string {
 
 func (attr *Bool) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
-    case Present:
-      *sets = append(*sets, columnName+"="+args.Append(attr.Value))
-    case Null:
-      *sets = append(*sets, columnName+"="+args.Append(nil))
+    case Present, Null:
+      *sets = append(*sets, columnName+"="+args.Append(attr))
   }
 }
 
 func (attr *Bool) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
-    case Present:
+    case Present, Null:
       *sets = append(*sets, columnName)
-      *values = append(*values, args.Append(attr.Value))
-    case Null:
-      *sets = append(*sets, columnName)
-      *values = append(*values, args.Append(nil))
+      *values = append(*values, args.Append(attr))
   }
 }
 
@@ -84,21 +79,16 @@ func (attr *Int16) String() string {
 
 func (attr *Int16) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
-    case Present:
-      *sets = append(*sets, columnName+"="+args.Append(attr.Value))
-    case Null:
-      *sets = append(*sets, columnName+"="+args.Append(nil))
+    case Present, Null:
+      *sets = append(*sets, columnName+"="+args.Append(attr))
   }
 }
 
 func (attr *Int16) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
-    case Present:
+    case Present, Null:
       *sets = append(*sets, columnName)
-      *values = append(*values, args.Append(attr.Value))
-    case Null:
-      *sets = append(*sets, columnName)
-      *values = append(*values, args.Append(nil))
+      *values = append(*values, args.Append(attr))
   }
 }
 
@@ -120,21 +110,16 @@ func (attr *Int32) String() string {
 
 func (attr *Int32) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
-    case Present:
-      *sets = append(*sets, columnName+"="+args.Append(attr.Value))
-    case Null:
-      *sets = append(*sets, columnName+"="+args.Append(nil))
+    case Present, Null:
+      *sets = append(*sets, columnName+"="+args.Append(attr))
   }
 }
 
 func (attr *Int32) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
-    case Present:
+    case Present, Null:
       *sets = append(*sets, columnName)
-      *values = append(*values, args.Append(attr.Value))
-    case Null:
-      *sets = append(*sets, columnName)
-      *values = append(*values, args.Append(nil))
+      *values = append(*values, args.Append(attr))
   }
 }
 
@@ -156,21 +141,16 @@ func (attr *Int64) String() string {
 
 func (attr *Int64) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
-    case Present:
-      *sets = append(*sets, columnName+"="+args.Append(attr.Value))
-    case Null:
-      *sets = append(*sets, columnName+"="+args.Append(nil))
+    case Present, Null:
+      *sets = append(*sets, columnName+"="+args.Append(attr))
   }
 }
 
 func (attr *Int64) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
-    case Present:
+    case Present, Null:
       *sets = append(*sets, columnName)
-      *values = append(*values, args.Append(attr.Value))
-    case Null:
-      *sets = append(*sets, columnName)
-      *values = append(*values, args.Append(nil))
+      *values = append(*values, args.Append(attr))
   }
 }
 
@@ -192,21 +172,16 @@ func (attr *String) String() string {
 
 func (attr *String) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
-    case Present:
-      *sets = append(*sets, columnName+"="+args.Append(attr.Value))
-    case Null:
-      *sets = append(*sets, columnName+"="+args.Append(nil))
+    case Present, Null:
+      *sets = append(*sets, columnName+"="+args.Append(attr))
   }
 }
 
 func (attr *String) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
-    case Present:
+    case Present, Null:
       *sets = append(*sets, columnName)
-      *values = append(*values, args.Append(attr.Value))
-    case Null:
-      *sets = append(*sets, columnName)
-      *values = append(*values, args.Append(nil))
+      *values = append(*values, args.Append(attr))
   }
 }
 
@@ -228,21 +203,16 @@ func (attr *Time) String() string {
 
 func (attr *Time) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
-    case Present:
-      *sets = append(*sets, columnName+"="+args.Append(attr.Value))
-    case Null:
-      *sets = append(*sets, columnName+"="+args.Append(nil))
+    case Present, Null:
+      *sets = append(*sets, columnName+"="+args.Append(attr))
   }
 }
 
 func (attr *Time) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
-    case Present:
+    case Present, Null:
       *sets = append(*sets, columnName)
-      *values = append(*values, args.Append(attr.Value))
-    case Null:
-      *sets = append(*sets, columnName)
-      *values = append(*values, args.Append(nil))
+      *values = append(*values, args.Append(attr))
   }
 }
 
@@ -264,21 +234,16 @@ func (attr *IPNet) String() string {
 
 func (attr *IPNet) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
-    case Present:
-      *sets = append(*sets, columnName+"="+args.Append(attr.Value))
-    case Null:
-      *sets = append(*sets, columnName+"="+args.Append(nil))
+    case Present, Null:
+      *sets = append(*sets, columnName+"="+args.Append(attr))
   }
 }
 
 func (attr *IPNet) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
-    case Present:
+    case Present, Null:
       *sets = append(*sets, columnName)
-      *values = append(*values, args.Append(attr.Value))
-    case Null:
-      *sets = append(*sets, columnName)
-      *values = append(*values, args.Append(nil))
+      *values = append(*values, args.Append(attr))
   }
 }
 

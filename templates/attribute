@@ -48,21 +48,16 @@ func (attr *{{.Name}}) String() string {
 
 func (attr *{{.Name}}) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
-    case Present:
-      *sets = append(*sets, columnName+"="+args.Append(attr.Value))
-    case Null:
-      *sets = append(*sets, columnName+"="+args.Append(nil))
+    case Present, Null:
+      *sets = append(*sets, columnName+"="+args.Append(attr))
   }
 }
 
 func (attr *{{.Name}}) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
-    case Present:
+    case Present, Null:
       *sets = append(*sets, columnName)
-      *values = append(*values, args.Append(attr.Value))
-    case Null:
-      *sets = append(*sets, columnName)
-      *values = append(*values, args.Append(nil))
+      *values = append(*values, args.Append(attr))
   }
 }
 
