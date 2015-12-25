@@ -2,6 +2,8 @@ package data_test
 
 import (
 	"bytes"
+	"fmt"
+	"net"
 	"testing"
 
 	"github.com/jackc/pgxdata/test/data"
@@ -469,5 +471,44 @@ func TestByteaByteSliceMapping(t *testing.T) {
 
 	if bytes.Compare(blob.Payload.Value, insertedRow.Payload.Value) != 0 {
 		t.Errorf("Expected Payload to be %v, but it was %v", insertedRow.Payload, blob.Payload)
+	}
+}
+
+func TestIPNetInetCidrMapping(t *testing.T) {
+	t.Parallel()
+
+	tx := begin(t)
+	defer tx.Rollback()
+
+	_, ipv4, err := net.ParseCIDR("127.0.0.1/32")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	insertedRow := data.IPTypes{
+		IPInet: data.IPNet{Value: *ipv4, Status: data.Present},
+		IPCidr: data.IPNet{Value: *ipv4, Status: data.Present},
+	}
+
+	err = data.InsertIPTypes(tx, &insertedRow)
+	if err != nil {
+		t.Fatalf("InsertIPTypes unexpectedly failed: %v", err)
+	}
+
+	ipTypes, err := data.SelectIPTypesByPK(tx, insertedRow.ID.Value)
+	if err != nil {
+		t.Fatalf("SelectIPTypesByPK unexpectedly failed: %v", err)
+	}
+
+	fmt.Println(ipv4.String())
+	fmt.Println(insertedRow.IPInet.String())
+	fmt.Println(ipTypes.IPInet.String())
+
+	if insertedRow.IPInet.String() != ipTypes.IPInet.String() {
+		t.Errorf("Expected IPInet to be %v, but it was %v", insertedRow.IPInet.String(), ipTypes.IPInet.String())
+	}
+
+	if insertedRow.IPCidr.String() != ipTypes.IPCidr.String() {
+		t.Errorf("Expected IPCidr to be %v, but it was %v", insertedRow.IPCidr, ipTypes.IPCidr)
 	}
 }

@@ -217,6 +217,8 @@ func TestPgCaseToGoPublicCase(t *testing.T) {
 		{"id", "ID"},
 		{"person_id", "PersonID"},
 		{"person_ideal", "PersonIdeal"},
+		{"ip", "IP"},
+		{"ip_source", "IPSource"},
 	}
 
 	for i, tt := range tests {

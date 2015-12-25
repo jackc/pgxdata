@@ -39,7 +39,9 @@ var pgToBoxTypeMap = map[string]string{
 	"character varying": "String",
 	"date":              "Time",
 	"timestamp with time zone": "Time",
-	"bytea":                    "Bytes",
+	"inet":  "IPNet",
+	"cidr":  "IPNet",
+	"bytea": "Bytes",
 }
 
 var pgToGoTypeMap = map[string]string{
@@ -128,6 +130,7 @@ func generateCmd(cmd *cobra.Command, args []string) {
 			{Name: "Int64", ValueType: "int64", FormatCode: "pgx.BinaryFormatCode"},
 			{Name: "String", ValueType: "string", FormatCode: "pgx.TextFormatCode"},
 			{Name: "Time", ValueType: "time.Time", FormatCode: "pgx.BinaryFormatCode"},
+			{Name: "IPNet", ValueType: "net.IPNet", FormatCode: "pgx.BinaryFormatCode"},
 		},
 		IntBoxTypes: []intBoxType{
 			{Name: "Int16", BitSize: 16},
@@ -257,9 +260,12 @@ func pgCaseToGoPublicCase(pg string) string {
 	parts := strings.Split(pg, "_")
 	buf := &bytes.Buffer{}
 	for _, s := range parts {
-		if s == "id" {
+		switch s {
+		case "id":
 			buf.WriteString("ID")
-		} else {
+		case "ip":
+			buf.WriteString("IP")
+		default:
 			buf.WriteString(strings.Title(s))
 		}
 	}

@@ -5,6 +5,7 @@ import (
   "encoding/json"
   "errors"
   "fmt"
+  "net"
   "strconv"
   "time"
 
@@ -249,6 +250,42 @@ func (attr *Time) FormatCode() int16 {
   return pgx.BinaryFormatCode
 }
 
+type IPNet struct {
+  Value  net.IPNet
+  Status Status
+}
+
+func (attr *IPNet) String() string {
+  if attr.Status == Present {
+    return fmt.Sprintf("%v", attr.Value)
+  }
+  return attr.Status.String()
+}
+
+func (attr *IPNet) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
+  switch attr.Status {
+    case Present:
+      *sets = append(*sets, columnName+"="+args.Append(attr.Value))
+    case Null:
+      *sets = append(*sets, columnName+"="+args.Append(nil))
+  }
+}
+
+func (attr *IPNet) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
+  switch attr.Status {
+    case Present:
+      *sets = append(*sets, columnName)
+      *values = append(*values, args.Append(attr.Value))
+    case Null:
+      *sets = append(*sets, columnName)
+      *values = append(*values, args.Append(nil))
+  }
+}
+
+func (attr *IPNet) FormatCode() int16 {
+  return pgx.BinaryFormatCode
+}
+
 
 func (attr *Bool) Scan(vr *pgx.ValueReader) error {
   if vr.Type().DataType != pgx.BoolOid {
@@ -445,6 +482,42 @@ func (attr *Time) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
   switch attr.Status {
   case Present:
     return pgx.EncodeTime(w, oid, attr.Value)
+  case Null:
+    w.WriteInt32(-1)
+    return nil
+  case Undefined:
+    return errors.New("cannot encode undefined attr")
+  default:
+    panic("unreachable")
+  }
+}
+
+func (attr *IPNet) Scan(vr *pgx.ValueReader) error {
+  oid := vr.Type().DataType
+  if oid != pgx.InetOid && oid != pgx.CidrOid {
+    return pgx.SerializationError(fmt.Sprintf("IPNet.Scan cannot decode OID %d", vr.Type().DataType))
+  }
+
+  if vr.Len() == -1 {
+    attr.Value = net.IPNet{}
+    attr.Status = Null
+    return nil
+  }
+
+  attr.Status = Present
+  attr.Value = pgx.DecodeInet(vr)
+
+  return vr.Err()
+}
+
+func (attr *IPNet) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
+  if oid != pgx.InetOid && oid != pgx.CidrOid {
+    return pgx.SerializationError(fmt.Sprintf("IPNet.Encode cannot encode into OID %d", oid))
+  }
+
+  switch attr.Status {
+  case Present:
+    return pgx.EncodeIPNet(w, oid, attr.Value)
   case Null:
     w.WriteInt32(-1)
     return nil

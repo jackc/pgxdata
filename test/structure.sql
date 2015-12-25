@@ -33,3 +33,10 @@ create table blob (
   id serial primary key,
   payload bytea not null
 );
+
+drop table if exists ip_types;
+create table ip_types (
+  id serial primary key,
+  ip_inet inet,
+  ip_cidr cidr
+);

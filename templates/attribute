@@ -5,6 +5,7 @@ import (
   "encoding/json"
   "errors"
   "fmt"
+  "net"
   "strconv"
   "time"
 
@@ -265,6 +266,42 @@ func (attr *Time) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
   switch attr.Status {
   case Present:
     return pgx.EncodeTime(w, oid, attr.Value)
+  case Null:
+    w.WriteInt32(-1)
+    return nil
+  case Undefined:
+    return errors.New("cannot encode undefined attr")
+  default:
+    panic("unreachable")
+  }
+}
+
+func (attr *IPNet) Scan(vr *pgx.ValueReader) error {
+  oid := vr.Type().DataType
+  if oid != pgx.InetOid && oid != pgx.CidrOid {
+    return pgx.SerializationError(fmt.Sprintf("IPNet.Scan cannot decode OID %d", vr.Type().DataType))
+  }
+
+  if vr.Len() == -1 {
+    attr.Value = net.IPNet{}
+    attr.Status = Null
+    return nil
+  }
+
+  attr.Status = Present
+  attr.Value = pgx.DecodeInet(vr)
+
+  return vr.Err()
+}
+
+func (attr *IPNet) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
+  if oid != pgx.InetOid && oid != pgx.CidrOid {
+    return pgx.SerializationError(fmt.Sprintf("IPNet.Encode cannot encode into OID %d", oid))
+  }
+
+  switch attr.Status {
+  case Present:
+    return pgx.EncodeIPNet(w, oid, attr.Value)
   case Null:
     w.WriteInt32(-1)
     return nil
