@@ -38,14 +38,14 @@ type Bool struct {
   Status Status
 }
 
-func (attr Bool) String() string {
+func (attr *Bool) String() string {
   if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
   }
   return attr.Status.String()
 }
 
-func (attr Bool) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
+func (attr *Bool) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
     case Present:
       *sets = append(*sets, columnName+"="+args.Append(attr.Value))
@@ -54,7 +54,7 @@ func (attr Bool) addUpdate(columnName string, sets *[]string, args *pgx.QueryArg
   }
 }
 
-func (attr Bool) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
+func (attr *Bool) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
     case Present:
       *sets = append(*sets, columnName)
@@ -65,43 +65,8 @@ func (attr Bool) addInsert(columnName string, sets, values *[]string, args *pgx.
   }
 }
 
-func (attr *Bool) Scan(r *pgx.ValueReader) error {
-  var nv pgx.NullBool
-  err := nv.Scan(r)
-  if err != nil {
-    return err
-  }
-
-  attr.Value = nv.Bool
-  if nv.Valid {
-    attr.Status = Present
-  } else {
-    attr.Status = Null
-  }
-
-  return nil
-}
-
-
-func (attr Bool) FormatCode() int16 {
-  var nv pgx.NullBool
-  return nv.FormatCode()
-}
-
-func (attr Bool) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
-  var nv pgx.NullBool
-  nv.Bool = attr.Value
-
-  switch attr.Status {
-  case Present:
-    nv.Valid = true
-  case Null:
-    nv.Valid = false
-  case Undefined:
-    return errors.New("cannot encode undefined attr")
-  }
-
-  return nv.Encode(w, oid)
+func (attr *Bool) FormatCode() int16 {
+  return pgx.BinaryFormatCode
 }
 
 type Int16 struct {
@@ -109,14 +74,14 @@ type Int16 struct {
   Status Status
 }
 
-func (attr Int16) String() string {
+func (attr *Int16) String() string {
   if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
   }
   return attr.Status.String()
 }
 
-func (attr Int16) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
+func (attr *Int16) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
     case Present:
       *sets = append(*sets, columnName+"="+args.Append(attr.Value))
@@ -125,7 +90,7 @@ func (attr Int16) addUpdate(columnName string, sets *[]string, args *pgx.QueryAr
   }
 }
 
-func (attr Int16) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
+func (attr *Int16) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
     case Present:
       *sets = append(*sets, columnName)
@@ -136,43 +101,8 @@ func (attr Int16) addInsert(columnName string, sets, values *[]string, args *pgx
   }
 }
 
-func (attr *Int16) Scan(r *pgx.ValueReader) error {
-  var nv pgx.NullInt16
-  err := nv.Scan(r)
-  if err != nil {
-    return err
-  }
-
-  attr.Value = nv.Int16
-  if nv.Valid {
-    attr.Status = Present
-  } else {
-    attr.Status = Null
-  }
-
-  return nil
-}
-
-
-func (attr Int16) FormatCode() int16 {
-  var nv pgx.NullInt16
-  return nv.FormatCode()
-}
-
-func (attr Int16) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
-  var nv pgx.NullInt16
-  nv.Int16 = attr.Value
-
-  switch attr.Status {
-  case Present:
-    nv.Valid = true
-  case Null:
-    nv.Valid = false
-  case Undefined:
-    return errors.New("cannot encode undefined attr")
-  }
-
-  return nv.Encode(w, oid)
+func (attr *Int16) FormatCode() int16 {
+  return pgx.BinaryFormatCode
 }
 
 type Int32 struct {
@@ -180,14 +110,14 @@ type Int32 struct {
   Status Status
 }
 
-func (attr Int32) String() string {
+func (attr *Int32) String() string {
   if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
   }
   return attr.Status.String()
 }
 
-func (attr Int32) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
+func (attr *Int32) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
     case Present:
       *sets = append(*sets, columnName+"="+args.Append(attr.Value))
@@ -196,7 +126,7 @@ func (attr Int32) addUpdate(columnName string, sets *[]string, args *pgx.QueryAr
   }
 }
 
-func (attr Int32) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
+func (attr *Int32) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
     case Present:
       *sets = append(*sets, columnName)
@@ -207,43 +137,8 @@ func (attr Int32) addInsert(columnName string, sets, values *[]string, args *pgx
   }
 }
 
-func (attr *Int32) Scan(r *pgx.ValueReader) error {
-  var nv pgx.NullInt32
-  err := nv.Scan(r)
-  if err != nil {
-    return err
-  }
-
-  attr.Value = nv.Int32
-  if nv.Valid {
-    attr.Status = Present
-  } else {
-    attr.Status = Null
-  }
-
-  return nil
-}
-
-
-func (attr Int32) FormatCode() int16 {
-  var nv pgx.NullInt32
-  return nv.FormatCode()
-}
-
-func (attr Int32) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
-  var nv pgx.NullInt32
-  nv.Int32 = attr.Value
-
-  switch attr.Status {
-  case Present:
-    nv.Valid = true
-  case Null:
-    nv.Valid = false
-  case Undefined:
-    return errors.New("cannot encode undefined attr")
-  }
-
-  return nv.Encode(w, oid)
+func (attr *Int32) FormatCode() int16 {
+  return pgx.BinaryFormatCode
 }
 
 type Int64 struct {
@@ -251,14 +146,14 @@ type Int64 struct {
   Status Status
 }
 
-func (attr Int64) String() string {
+func (attr *Int64) String() string {
   if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
   }
   return attr.Status.String()
 }
 
-func (attr Int64) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
+func (attr *Int64) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
     case Present:
       *sets = append(*sets, columnName+"="+args.Append(attr.Value))
@@ -267,7 +162,7 @@ func (attr Int64) addUpdate(columnName string, sets *[]string, args *pgx.QueryAr
   }
 }
 
-func (attr Int64) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
+func (attr *Int64) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
     case Present:
       *sets = append(*sets, columnName)
@@ -278,43 +173,8 @@ func (attr Int64) addInsert(columnName string, sets, values *[]string, args *pgx
   }
 }
 
-func (attr *Int64) Scan(r *pgx.ValueReader) error {
-  var nv pgx.NullInt64
-  err := nv.Scan(r)
-  if err != nil {
-    return err
-  }
-
-  attr.Value = nv.Int64
-  if nv.Valid {
-    attr.Status = Present
-  } else {
-    attr.Status = Null
-  }
-
-  return nil
-}
-
-
-func (attr Int64) FormatCode() int16 {
-  var nv pgx.NullInt64
-  return nv.FormatCode()
-}
-
-func (attr Int64) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
-  var nv pgx.NullInt64
-  nv.Int64 = attr.Value
-
-  switch attr.Status {
-  case Present:
-    nv.Valid = true
-  case Null:
-    nv.Valid = false
-  case Undefined:
-    return errors.New("cannot encode undefined attr")
-  }
-
-  return nv.Encode(w, oid)
+func (attr *Int64) FormatCode() int16 {
+  return pgx.BinaryFormatCode
 }
 
 type String struct {
@@ -322,14 +182,14 @@ type String struct {
   Status Status
 }
 
-func (attr String) String() string {
+func (attr *String) String() string {
   if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
   }
   return attr.Status.String()
 }
 
-func (attr String) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
+func (attr *String) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
     case Present:
       *sets = append(*sets, columnName+"="+args.Append(attr.Value))
@@ -338,7 +198,7 @@ func (attr String) addUpdate(columnName string, sets *[]string, args *pgx.QueryA
   }
 }
 
-func (attr String) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
+func (attr *String) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
     case Present:
       *sets = append(*sets, columnName)
@@ -349,43 +209,8 @@ func (attr String) addInsert(columnName string, sets, values *[]string, args *pg
   }
 }
 
-func (attr *String) Scan(r *pgx.ValueReader) error {
-  var nv pgx.NullString
-  err := nv.Scan(r)
-  if err != nil {
-    return err
-  }
-
-  attr.Value = nv.String
-  if nv.Valid {
-    attr.Status = Present
-  } else {
-    attr.Status = Null
-  }
-
-  return nil
-}
-
-
-func (attr String) FormatCode() int16 {
-  var nv pgx.NullString
-  return nv.FormatCode()
-}
-
-func (attr String) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
-  var nv pgx.NullString
-  nv.String = attr.Value
-
-  switch attr.Status {
-  case Present:
-    nv.Valid = true
-  case Null:
-    nv.Valid = false
-  case Undefined:
-    return errors.New("cannot encode undefined attr")
-  }
-
-  return nv.Encode(w, oid)
+func (attr *String) FormatCode() int16 {
+  return pgx.TextFormatCode
 }
 
 type Time struct {
@@ -393,14 +218,14 @@ type Time struct {
   Status Status
 }
 
-func (attr Time) String() string {
+func (attr *Time) String() string {
   if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
   }
   return attr.Status.String()
 }
 
-func (attr Time) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
+func (attr *Time) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
     case Present:
       *sets = append(*sets, columnName+"="+args.Append(attr.Value))
@@ -409,7 +234,7 @@ func (attr Time) addUpdate(columnName string, sets *[]string, args *pgx.QueryArg
   }
 }
 
-func (attr Time) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
+func (attr *Time) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
     case Present:
       *sets = append(*sets, columnName)
@@ -420,45 +245,215 @@ func (attr Time) addInsert(columnName string, sets, values *[]string, args *pgx.
   }
 }
 
-func (attr *Time) Scan(r *pgx.ValueReader) error {
-  var nv pgx.NullTime
-  err := nv.Scan(r)
-  if err != nil {
-    return err
+func (attr *Time) FormatCode() int16 {
+  return pgx.BinaryFormatCode
+}
+
+
+func (attr *Bool) Scan(vr *pgx.ValueReader) error {
+  if vr.Type().DataType != pgx.BoolOid {
+    return pgx.SerializationError(fmt.Sprintf("Bool.Scan cannot decode OID %d", vr.Type().DataType))
   }
 
-  attr.Value = nv.Time
-  if nv.Valid {
-    attr.Status = Present
-  } else {
+  if vr.Len() == -1 {
+    attr.Value = false
     attr.Status = Null
+    return nil
   }
 
-  return nil
+  attr.Value = pgx.DecodeBool(vr)
+  attr.Status = Present
+  return vr.Err()
 }
 
-
-func (attr Time) FormatCode() int16 {
-  var nv pgx.NullTime
-  return nv.FormatCode()
-}
-
-func (attr Time) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
-  var nv pgx.NullTime
-  nv.Time = attr.Value
+func (attr *Bool) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
+  if oid != pgx.BoolOid {
+    return pgx.SerializationError(fmt.Sprintf("Bool.Encode cannot encode into OID %d", oid))
+  }
 
   switch attr.Status {
   case Present:
-    nv.Valid = true
+    return pgx.EncodeBool(w, oid, attr.Value)
   case Null:
-    nv.Valid = false
+    w.WriteInt32(-1)
+    return nil
   case Undefined:
     return errors.New("cannot encode undefined attr")
+  default:
+    panic("unreachable")
   }
-
-  return nv.Encode(w, oid)
 }
 
+func (attr *Int16) Scan(vr *pgx.ValueReader) error {
+  if vr.Type().DataType != pgx.Int2Oid {
+    return pgx.SerializationError(fmt.Sprintf("Int16.Scan cannot decode OID %d", vr.Type().DataType))
+  }
+
+  if vr.Len() == -1 {
+    attr.Value = 0
+    attr.Status = Null
+    return nil
+  }
+
+  attr.Value = pgx.DecodeInt2(vr)
+  attr.Status = Present
+  return vr.Err()
+}
+
+func (attr *Int16) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
+  if oid != pgx.Int2Oid {
+    return pgx.SerializationError(fmt.Sprintf("Int16.Encode cannot encode into OID %d", oid))
+  }
+
+  switch attr.Status {
+  case Present:
+    return pgx.EncodeInt16(w, oid, attr.Value)
+  case Null:
+    w.WriteInt32(-1)
+    return nil
+  case Undefined:
+    return errors.New("cannot encode undefined attr")
+  default:
+    panic("unreachable")
+  }
+}
+
+func (attr *Int32) Scan(vr *pgx.ValueReader) error {
+  if vr.Type().DataType != pgx.Int4Oid {
+    return pgx.SerializationError(fmt.Sprintf("Int32.Scan cannot decode OID %d", vr.Type().DataType))
+  }
+
+  if vr.Len() == -1 {
+    attr.Value = 0
+    attr.Status = Null
+    return nil
+  }
+
+  attr.Value = pgx.DecodeInt4(vr)
+  attr.Status = Present
+  return vr.Err()
+}
+
+func (attr *Int32) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
+  if oid != pgx.Int4Oid {
+    return pgx.SerializationError(fmt.Sprintf("Int32.Encode cannot encode into OID %d", oid))
+  }
+
+  switch attr.Status {
+  case Present:
+    return pgx.EncodeInt32(w, oid, attr.Value)
+  case Null:
+    w.WriteInt32(-1)
+    return nil
+  case Undefined:
+    return errors.New("cannot encode undefined attr")
+  default:
+    panic("unreachable")
+  }
+}
+
+func (attr *Int64) Scan(vr *pgx.ValueReader) error {
+  if vr.Type().DataType != pgx.Int8Oid {
+    return pgx.SerializationError(fmt.Sprintf("Int64.Scan cannot decode OID %d", vr.Type().DataType))
+  }
+
+  if vr.Len() == -1 {
+    attr.Value = 0
+    attr.Status = Null
+    return nil
+  }
+
+  attr.Value = pgx.DecodeInt8(vr)
+  attr.Status = Present
+  return vr.Err()
+}
+
+func (attr *Int64) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
+  if oid != pgx.Int8Oid {
+    return pgx.SerializationError(fmt.Sprintf("Int64.Encode cannot encode into OID %d", oid))
+  }
+
+  switch attr.Status {
+  case Present:
+    return pgx.EncodeInt64(w, oid, attr.Value)
+  case Null:
+    w.WriteInt32(-1)
+    return nil
+  case Undefined:
+    return errors.New("cannot encode undefined attr")
+  default:
+    panic("unreachable")
+  }
+}
+
+func (attr *String) Scan(vr *pgx.ValueReader) error {
+  if vr.Len() == -1 {
+    attr.Value = ""
+    attr.Status = Null
+    return nil
+  }
+
+  attr.Value = pgx.DecodeText(vr)
+  attr.Status = Present
+  return vr.Err()
+}
+
+func (attr *String) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
+  switch attr.Status {
+  case Present:
+    return pgx.EncodeString(w, oid, attr.Value)
+  case Null:
+    w.WriteInt32(-1)
+    return nil
+  case Undefined:
+    return errors.New("cannot encode undefined attr")
+  default:
+    panic("unreachable")
+  }
+}
+
+func (attr *Time) Scan(vr *pgx.ValueReader) error {
+  oid := vr.Type().DataType
+  if oid != pgx.TimestampTzOid && oid != pgx.TimestampOid && oid != pgx.DateOid {
+    return pgx.SerializationError(fmt.Sprintf("Time.Scan cannot decode OID %d", vr.Type().DataType))
+  }
+
+  if vr.Len() == -1 {
+    attr.Value = time.Time{}
+    attr.Status = Null
+    return nil
+  }
+
+  attr.Status = Present
+  switch oid {
+  case pgx.TimestampTzOid:
+    attr.Value = pgx.DecodeTimestampTz(vr)
+  case pgx.TimestampOid:
+    attr.Value = pgx.DecodeTimestamp(vr)
+  case pgx.DateOid:
+    attr.Value = pgx.DecodeDate(vr)
+  }
+
+  return vr.Err()
+}
+
+func (attr *Time) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
+  if oid != pgx.TimestampTzOid && oid != pgx.TimestampOid && oid != pgx.DateOid {
+    return pgx.SerializationError(fmt.Sprintf("Time.Encode cannot encode into OID %d", oid))
+  }
+
+  switch attr.Status {
+  case Present:
+    return pgx.EncodeTime(w, oid, attr.Value)
+  case Null:
+    w.WriteInt32(-1)
+    return nil
+  case Undefined:
+    return errors.New("cannot encode undefined attr")
+  default:
+    panic("unreachable")
+  }
+}
 
 type Bytes struct {
   Value  []byte

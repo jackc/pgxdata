@@ -38,14 +38,14 @@ type {{.Name}} struct {
   Status Status
 }
 
-func (attr {{.Name}}) String() string {
+func (attr *{{.Name}}) String() string {
   if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
   }
   return attr.Status.String()
 }
 
-func (attr {{.Name}}) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
+func (attr *{{.Name}}) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
     case Present:
       *sets = append(*sets, columnName+"="+args.Append(attr.Value))
@@ -54,7 +54,7 @@ func (attr {{.Name}}) addUpdate(columnName string, sets *[]string, args *pgx.Que
   }
 }
 
-func (attr {{.Name}}) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
+func (attr *{{.Name}}) addInsert(columnName string, sets, values *[]string, args *pgx.QueryArgs) {
   switch attr.Status {
     case Present:
       *sets = append(*sets, columnName)
@@ -65,45 +65,215 @@ func (attr {{.Name}}) addInsert(columnName string, sets, values *[]string, args 
   }
 }
 
-func (attr *{{.Name}}) Scan(r *pgx.ValueReader) error {
-  var nv pgx.Null{{.Name}}
-  err := nv.Scan(r)
-  if err != nil {
-    return err
+func (attr *{{.Name}}) FormatCode() int16 {
+  return {{.FormatCode}}
+}
+{{end}}
+
+func (attr *Bool) Scan(vr *pgx.ValueReader) error {
+  if vr.Type().DataType != pgx.BoolOid {
+    return pgx.SerializationError(fmt.Sprintf("Bool.Scan cannot decode OID %d", vr.Type().DataType))
   }
 
-  attr.Value = nv.{{.Name}}
-  if nv.Valid {
-    attr.Status = Present
-  } else {
+  if vr.Len() == -1 {
+    attr.Value = false
     attr.Status = Null
+    return nil
   }
 
-  return nil
+  attr.Value = pgx.DecodeBool(vr)
+  attr.Status = Present
+  return vr.Err()
 }
 
-
-func (attr {{.Name}}) FormatCode() int16 {
-  var nv pgx.Null{{.Name}}
-  return nv.FormatCode()
-}
-
-func (attr {{.Name}}) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
-  var nv pgx.Null{{.Name}}
-  nv.{{.Name}} = attr.Value
+func (attr *Bool) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
+  if oid != pgx.BoolOid {
+    return pgx.SerializationError(fmt.Sprintf("Bool.Encode cannot encode into OID %d", oid))
+  }
 
   switch attr.Status {
   case Present:
-    nv.Valid = true
+    return pgx.EncodeBool(w, oid, attr.Value)
   case Null:
-    nv.Valid = false
+    w.WriteInt32(-1)
+    return nil
   case Undefined:
     return errors.New("cannot encode undefined attr")
+  default:
+    panic("unreachable")
+  }
+}
+
+func (attr *Int16) Scan(vr *pgx.ValueReader) error {
+  if vr.Type().DataType != pgx.Int2Oid {
+    return pgx.SerializationError(fmt.Sprintf("Int16.Scan cannot decode OID %d", vr.Type().DataType))
   }
 
-  return nv.Encode(w, oid)
+  if vr.Len() == -1 {
+    attr.Value = 0
+    attr.Status = Null
+    return nil
+  }
+
+  attr.Value = pgx.DecodeInt2(vr)
+  attr.Status = Present
+  return vr.Err()
 }
-{{end}}
+
+func (attr *Int16) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
+  if oid != pgx.Int2Oid {
+    return pgx.SerializationError(fmt.Sprintf("Int16.Encode cannot encode into OID %d", oid))
+  }
+
+  switch attr.Status {
+  case Present:
+    return pgx.EncodeInt16(w, oid, attr.Value)
+  case Null:
+    w.WriteInt32(-1)
+    return nil
+  case Undefined:
+    return errors.New("cannot encode undefined attr")
+  default:
+    panic("unreachable")
+  }
+}
+
+func (attr *Int32) Scan(vr *pgx.ValueReader) error {
+  if vr.Type().DataType != pgx.Int4Oid {
+    return pgx.SerializationError(fmt.Sprintf("Int32.Scan cannot decode OID %d", vr.Type().DataType))
+  }
+
+  if vr.Len() == -1 {
+    attr.Value = 0
+    attr.Status = Null
+    return nil
+  }
+
+  attr.Value = pgx.DecodeInt4(vr)
+  attr.Status = Present
+  return vr.Err()
+}
+
+func (attr *Int32) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
+  if oid != pgx.Int4Oid {
+    return pgx.SerializationError(fmt.Sprintf("Int32.Encode cannot encode into OID %d", oid))
+  }
+
+  switch attr.Status {
+  case Present:
+    return pgx.EncodeInt32(w, oid, attr.Value)
+  case Null:
+    w.WriteInt32(-1)
+    return nil
+  case Undefined:
+    return errors.New("cannot encode undefined attr")
+  default:
+    panic("unreachable")
+  }
+}
+
+func (attr *Int64) Scan(vr *pgx.ValueReader) error {
+  if vr.Type().DataType != pgx.Int8Oid {
+    return pgx.SerializationError(fmt.Sprintf("Int64.Scan cannot decode OID %d", vr.Type().DataType))
+  }
+
+  if vr.Len() == -1 {
+    attr.Value = 0
+    attr.Status = Null
+    return nil
+  }
+
+  attr.Value = pgx.DecodeInt8(vr)
+  attr.Status = Present
+  return vr.Err()
+}
+
+func (attr *Int64) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
+  if oid != pgx.Int8Oid {
+    return pgx.SerializationError(fmt.Sprintf("Int64.Encode cannot encode into OID %d", oid))
+  }
+
+  switch attr.Status {
+  case Present:
+    return pgx.EncodeInt64(w, oid, attr.Value)
+  case Null:
+    w.WriteInt32(-1)
+    return nil
+  case Undefined:
+    return errors.New("cannot encode undefined attr")
+  default:
+    panic("unreachable")
+  }
+}
+
+func (attr *String) Scan(vr *pgx.ValueReader) error {
+  if vr.Len() == -1 {
+    attr.Value = ""
+    attr.Status = Null
+    return nil
+  }
+
+  attr.Value = pgx.DecodeText(vr)
+  attr.Status = Present
+  return vr.Err()
+}
+
+func (attr *String) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
+  switch attr.Status {
+  case Present:
+    return pgx.EncodeString(w, oid, attr.Value)
+  case Null:
+    w.WriteInt32(-1)
+    return nil
+  case Undefined:
+    return errors.New("cannot encode undefined attr")
+  default:
+    panic("unreachable")
+  }
+}
+
+func (attr *Time) Scan(vr *pgx.ValueReader) error {
+  oid := vr.Type().DataType
+  if oid != pgx.TimestampTzOid && oid != pgx.TimestampOid && oid != pgx.DateOid {
+    return pgx.SerializationError(fmt.Sprintf("Time.Scan cannot decode OID %d", vr.Type().DataType))
+  }
+
+  if vr.Len() == -1 {
+    attr.Value = time.Time{}
+    attr.Status = Null
+    return nil
+  }
+
+  attr.Status = Present
+  switch oid {
+  case pgx.TimestampTzOid:
+    attr.Value = pgx.DecodeTimestampTz(vr)
+  case pgx.TimestampOid:
+    attr.Value = pgx.DecodeTimestamp(vr)
+  case pgx.DateOid:
+    attr.Value = pgx.DecodeDate(vr)
+  }
+
+  return vr.Err()
+}
+
+func (attr *Time) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
+  if oid != pgx.TimestampTzOid && oid != pgx.TimestampOid && oid != pgx.DateOid {
+    return pgx.SerializationError(fmt.Sprintf("Time.Encode cannot encode into OID %d", oid))
+  }
+
+  switch attr.Status {
+  case Present:
+    return pgx.EncodeTime(w, oid, attr.Value)
+  case Null:
+    w.WriteInt32(-1)
+    return nil
+  case Undefined:
+    return errors.New("cannot encode undefined attr")
+  default:
+    panic("unreachable")
+  }
+}
 
 type Bytes struct {
   Value  []byte

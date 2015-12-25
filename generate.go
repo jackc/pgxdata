@@ -15,8 +15,9 @@ import (
 )
 
 type boxType struct {
-	Name      string
-	ValueType string
+	Name       string
+	ValueType  string
+	FormatCode string
 }
 
 type intBoxType struct {
@@ -121,12 +122,12 @@ func generateCmd(cmd *cobra.Command, args []string) {
 		PkgName: c.Package,
 		Version: VERSION,
 		BoxTypes: []boxType{
-			{Name: "Bool", ValueType: "bool"},
-			{Name: "Int16", ValueType: "int16"},
-			{Name: "Int32", ValueType: "int32"},
-			{Name: "Int64", ValueType: "int64"},
-			{Name: "String", ValueType: "string"},
-			{Name: "Time", ValueType: "time.Time"},
+			{Name: "Bool", ValueType: "bool", FormatCode: "pgx.BinaryFormatCode"},
+			{Name: "Int16", ValueType: "int16", FormatCode: "pgx.BinaryFormatCode"},
+			{Name: "Int32", ValueType: "int32", FormatCode: "pgx.BinaryFormatCode"},
+			{Name: "Int64", ValueType: "int64", FormatCode: "pgx.BinaryFormatCode"},
+			{Name: "String", ValueType: "string", FormatCode: "pgx.TextFormatCode"},
+			{Name: "Time", ValueType: "time.Time", FormatCode: "pgx.BinaryFormatCode"},
 		},
 		IntBoxTypes: []intBoxType{
 			{Name: "Int16", BitSize: 16},
