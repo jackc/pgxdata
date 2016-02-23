@@ -263,8 +263,12 @@ func (attr *Bool) Scan(vr *pgx.ValueReader) error {
     return nil
   }
 
-  attr.Value = pgx.DecodeBool(vr)
+  err := pgx.Decode(vr, &attr.Value)
+  if err != nil {
+    return err
+  }
   attr.Status = Present
+
   return vr.Err()
 }
 
@@ -275,7 +279,7 @@ func (attr *Bool) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
 
   switch attr.Status {
   case Present:
-    return pgx.EncodeBool(w, oid, attr.Value)
+    return pgx.Encode(w, oid, attr.Value)
   case Null:
     w.WriteInt32(-1)
     return nil
@@ -297,8 +301,12 @@ func (attr *Int16) Scan(vr *pgx.ValueReader) error {
     return nil
   }
 
-  attr.Value = pgx.DecodeInt2(vr)
+  err := pgx.Decode(vr, &attr.Value)
+  if err != nil {
+    return err
+  }
   attr.Status = Present
+
   return vr.Err()
 }
 
@@ -309,7 +317,7 @@ func (attr *Int16) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
 
   switch attr.Status {
   case Present:
-    return pgx.EncodeInt16(w, oid, attr.Value)
+    return pgx.Encode(w, oid, attr.Value)
   case Null:
     w.WriteInt32(-1)
     return nil
@@ -331,8 +339,12 @@ func (attr *Int32) Scan(vr *pgx.ValueReader) error {
     return nil
   }
 
-  attr.Value = pgx.DecodeInt4(vr)
+  err := pgx.Decode(vr, &attr.Value)
+  if err != nil {
+    return err
+  }
   attr.Status = Present
+
   return vr.Err()
 }
 
@@ -343,7 +355,7 @@ func (attr *Int32) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
 
   switch attr.Status {
   case Present:
-    return pgx.EncodeInt32(w, oid, attr.Value)
+    return pgx.Encode(w, oid, attr.Value)
   case Null:
     w.WriteInt32(-1)
     return nil
@@ -365,8 +377,12 @@ func (attr *Int64) Scan(vr *pgx.ValueReader) error {
     return nil
   }
 
-  attr.Value = pgx.DecodeInt8(vr)
+  err := pgx.Decode(vr, &attr.Value)
+  if err != nil {
+    return err
+  }
   attr.Status = Present
+
   return vr.Err()
 }
 
@@ -377,7 +393,7 @@ func (attr *Int64) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
 
   switch attr.Status {
   case Present:
-    return pgx.EncodeInt64(w, oid, attr.Value)
+    return pgx.Encode(w, oid, attr.Value)
   case Null:
     w.WriteInt32(-1)
     return nil
@@ -395,15 +411,19 @@ func (attr *String) Scan(vr *pgx.ValueReader) error {
     return nil
   }
 
-  attr.Value = pgx.DecodeText(vr)
+  err := pgx.Decode(vr, &attr.Value)
+  if err != nil {
+    return err
+  }
   attr.Status = Present
+
   return vr.Err()
 }
 
 func (attr *String) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
   switch attr.Status {
   case Present:
-    return pgx.EncodeString(w, oid, attr.Value)
+    return pgx.Encode(w, oid, attr.Value)
   case Null:
     w.WriteInt32(-1)
     return nil
@@ -426,15 +446,11 @@ func (attr *Time) Scan(vr *pgx.ValueReader) error {
     return nil
   }
 
-  attr.Status = Present
-  switch oid {
-  case pgx.TimestampTzOid:
-    attr.Value = pgx.DecodeTimestampTz(vr)
-  case pgx.TimestampOid:
-    attr.Value = pgx.DecodeTimestamp(vr)
-  case pgx.DateOid:
-    attr.Value = pgx.DecodeDate(vr)
+  err := pgx.Decode(vr, &attr.Value)
+  if err != nil {
+    return err
   }
+  attr.Status = Present
 
   return vr.Err()
 }
@@ -446,7 +462,7 @@ func (attr *Time) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
 
   switch attr.Status {
   case Present:
-    return pgx.EncodeTime(w, oid, attr.Value)
+    return pgx.Encode(w, oid, attr.Value)
   case Null:
     w.WriteInt32(-1)
     return nil
@@ -470,7 +486,10 @@ func (attr *IPNet) Scan(vr *pgx.ValueReader) error {
   }
 
   attr.Status = Present
-  attr.Value = pgx.DecodeInet(vr)
+  err := pgx.Decode(vr, &attr.Value)
+  if err != nil {
+    return err
+  }
 
   return vr.Err()
 }
@@ -482,7 +501,7 @@ func (attr *IPNet) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
 
   switch attr.Status {
   case Present:
-    return pgx.EncodeIPNet(w, oid, attr.Value)
+    return pgx.Encode(w, oid, attr.Value)
   case Null:
     w.WriteInt32(-1)
     return nil
