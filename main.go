@@ -28,7 +28,7 @@ func main() {
 		Run:   versionCmd,
 	}
 
-	var rootCmd = &cobra.Command{Use: "app"}
+	var rootCmd = &cobra.Command{Use: "pgxdata"}
 	rootCmd.AddCommand(cmdInit)
 	rootCmd.AddCommand(cmdGenerate)
 	rootCmd.AddCommand(cmdVersion)
