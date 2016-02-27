@@ -39,6 +39,10 @@ type {{.Name}} struct {
   Status Status
 }
 
+func New{{.Name}}(value {{.ValueType}}) {{.Name}} {
+  return {{.Name}}{Value: value, Status: Present}
+}
+
 func (attr *{{.Name}}) String() string {
   if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
@@ -329,6 +333,16 @@ func (attr *IPNet) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
 type Bytes struct {
   Value  []byte
   Status Status
+}
+
+func NewBytes(value []byte) Bytes {
+  var status Status
+  if value != nil {
+    status = Present
+  } else {
+    status = Null
+  }
+  return Bytes{Value: value, Status: status}
 }
 
 func (attr *Bytes) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {

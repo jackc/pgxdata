@@ -39,6 +39,10 @@ type Bool struct {
   Status Status
 }
 
+func NewBool(value bool) Bool {
+  return Bool{Value: value, Status: Present}
+}
+
 func (attr *Bool) String() string {
   if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
@@ -68,6 +72,10 @@ func (attr *Bool) FormatCode() int16 {
 type Int16 struct {
   Value  int16
   Status Status
+}
+
+func NewInt16(value int16) Int16 {
+  return Int16{Value: value, Status: Present}
 }
 
 func (attr *Int16) String() string {
@@ -101,6 +109,10 @@ type Int32 struct {
   Status Status
 }
 
+func NewInt32(value int32) Int32 {
+  return Int32{Value: value, Status: Present}
+}
+
 func (attr *Int32) String() string {
   if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
@@ -130,6 +142,10 @@ func (attr *Int32) FormatCode() int16 {
 type Int64 struct {
   Value  int64
   Status Status
+}
+
+func NewInt64(value int64) Int64 {
+  return Int64{Value: value, Status: Present}
 }
 
 func (attr *Int64) String() string {
@@ -163,6 +179,10 @@ type String struct {
   Status Status
 }
 
+func NewString(value string) String {
+  return String{Value: value, Status: Present}
+}
+
 func (attr *String) String() string {
   if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
@@ -194,6 +214,10 @@ type Time struct {
   Status Status
 }
 
+func NewTime(value time.Time) Time {
+  return Time{Value: value, Status: Present}
+}
+
 func (attr *Time) String() string {
   if attr.Status == Present {
     return fmt.Sprintf("%v", attr.Value)
@@ -223,6 +247,10 @@ func (attr *Time) FormatCode() int16 {
 type IPNet struct {
   Value  net.IPNet
   Status Status
+}
+
+func NewIPNet(value net.IPNet) IPNet {
+  return IPNet{Value: value, Status: Present}
 }
 
 func (attr *IPNet) String() string {
@@ -515,6 +543,16 @@ func (attr *IPNet) Encode(w *pgx.WriteBuf, oid pgx.Oid) error {
 type Bytes struct {
   Value  []byte
   Status Status
+}
+
+func NewBytes(value []byte) Bytes {
+  var status Status
+  if value != nil {
+    status = Present
+  } else {
+    status = Null
+  }
+  return Bytes{Value: value, Status: status}
 }
 
 func (attr *Bytes) addUpdate(columnName string, sets *[]string, args *pgx.QueryArgs) {
