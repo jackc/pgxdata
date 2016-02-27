@@ -54,6 +54,12 @@ var pgToGoTypeMap = map[string]string{
 	"bytea":                    "[]byte",
 }
 
+var acronyms = map[string]bool{
+	"id":  true,
+	"ip":  true,
+	"url": true,
+}
+
 type Config struct {
 	Package  string
 	Database pgx.ConnConfig
@@ -260,14 +266,12 @@ func pgCaseToGoPublicCase(pg string) string {
 	parts := strings.Split(pg, "_")
 	buf := &bytes.Buffer{}
 	for _, s := range parts {
-		switch s {
-		case "id":
-			buf.WriteString("ID")
-		case "ip":
-			buf.WriteString("IP")
-		default:
-			buf.WriteString(strings.Title(s))
+		if acronyms[s] {
+			s = strings.ToUpper(s)
+		} else {
+			s = strings.Title(s)
 		}
+		buf.WriteString(s)
 	}
 
 	return buf.String()
@@ -278,14 +282,13 @@ func pgCaseToGoPrivateCase(pg string) string {
 	buf := &bytes.Buffer{}
 	for i, s := range parts {
 		if i == 0 {
-			buf.WriteString(strings.ToLower(s))
+			s = strings.ToLower(s)
+		} else if acronyms[s] {
+			s = strings.ToUpper(s)
 		} else {
-			if s == "id" {
-				buf.WriteString("ID")
-			} else {
-				buf.WriteString(strings.Title(s))
-			}
+			s = strings.Title(s)
 		}
+		buf.WriteString(s)
 	}
 
 	return buf.String()

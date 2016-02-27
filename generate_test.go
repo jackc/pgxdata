@@ -219,6 +219,9 @@ func TestPgCaseToGoPublicCase(t *testing.T) {
 		{"person_ideal", "PersonIdeal"},
 		{"ip", "IP"},
 		{"ip_source", "IPSource"},
+		{"url", "URL"},
+		{"url_base", "URLBase"},
+		{"curl", "Curl"},
 	}
 
 	for i, tt := range tests {
@@ -240,6 +243,9 @@ func TestPgCaseToGoPrivateCase(t *testing.T) {
 		{"id", "id"},
 		{"person_id", "personID"},
 		{"person_ideal", "personIdeal"},
+		{"url", "url"},
+		{"url_base", "urlBase"},
+		{"curl", "curl"},
 	}
 
 	for i, tt := range tests {
