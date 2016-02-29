@@ -46,8 +46,8 @@ func initCmd(cmd *cobra.Command, args []string) {
 		tmpl *template.Template
 	}{
 		{"config.toml", templates.Lookup("config")},
-		{"attribute.go", templates.Lookup("attribute")},
-		{"db.go", templates.Lookup("db")},
+		{"pgxdata_attribute.go", templates.Lookup("attribute")},
+		{"pgxdata_db.go", templates.Lookup("db")},
 	}
 	for _, f := range files {
 		err := writeInitFile(filepath.Join(data.PkgName, f.path), f.tmpl, data)

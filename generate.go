@@ -149,8 +149,8 @@ func generateCmd(cmd *cobra.Command, args []string) {
 		path string
 		tmpl *template.Template
 	}{
-		{"attribute.go", templates.Lookup("attribute")},
-		{"db.go", templates.Lookup("db")},
+		{"pgxdata_attribute.go", templates.Lookup("attribute")},
+		{"pgxdata_db.go", templates.Lookup("db")},
 	}
 	for _, f := range supportFiles {
 		err := writeSupportFile(f.path, f.tmpl, supportData)
@@ -161,7 +161,7 @@ func generateCmd(cmd *cobra.Command, args []string) {
 	}
 
 	for _, t := range c.Tables {
-		file, err := os.Create(goCaseToFileCase(t.StructName) + ".go")
+		file, err := os.Create("pgxdata_" + goCaseToFileCase(t.StructName) + ".go")
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
