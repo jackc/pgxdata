@@ -5,7 +5,7 @@ func Delete{{.StructName}}(db Queryer{{range .PrimaryKeyColumns}},
 
   sql := `delete from "{{.TableName}}" where ` {{ range $i, $column := .PrimaryKeyColumns}} + `{{if $i}} and {{end}}"{{$column.ColumnName}}"=` + args.Append({{$column.VarName}}){{end}}
 
-  commandTag, err := db.Exec(sql, args...)
+  commandTag, err := prepareExec(db, "pgxdataDelete{{.StructName}}", sql, args...)
   if err != nil {
     return err
   }

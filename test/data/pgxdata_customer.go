@@ -15,15 +15,15 @@ type Customer struct {
   CreationTime Time
 }
 
+const countCustomerSQL = `select count(*) from "customer"`
+
 func CountCustomer(db Queryer) (int64, error) {
   var n int64
-  sql := `select count(*) from "customer"`
-  err := db.QueryRow(sql).Scan(&n)
+  err := prepareQueryRow(db, "pgxdataCountCustomer", countCustomerSQL).Scan(&n)
   return n, err
 }
 
-func SelectAllCustomer(db Queryer) ([]Customer, error) {
-  sql := `select
+const SelectAllCustomerSQL = `select
   "id",
   "first_name",
   "last_name",
@@ -31,9 +31,10 @@ func SelectAllCustomer(db Queryer) ([]Customer, error) {
   "creation_time"
 from "customer"`
 
+func SelectAllCustomer(db Queryer) ([]Customer, error) {
   var rows []Customer
 
-  dbRows, err := db.Query(sql)
+  dbRows, err := prepareQuery(db, "pgxdataSelectAllCustomer", SelectAllCustomerSQL)
   if err != nil {
     return nil, err
   }
@@ -57,11 +58,7 @@ from "customer"`
   return rows, nil
 }
 
-func SelectCustomerByPK(
-  db Queryer,
-  id int32,
-) (*Customer, error) {
-  sql := `select
+const selectCustomerByPKSQL = `select
   "id",
   "first_name",
   "last_name",
@@ -70,8 +67,12 @@ func SelectCustomerByPK(
 from "customer"
 where "id"=$1`
 
+func SelectCustomerByPK(
+  db Queryer,
+  id int32,
+) (*Customer, error) {
   var row Customer
-  err := db.QueryRow(sql , id).Scan(
+  err := prepareQueryRow(db, "pgxdataSelectCustomerByPK", selectCustomerByPKSQL, id).Scan(
 &row.ID,
     &row.FirstName,
     &row.LastName,
@@ -104,7 +105,9 @@ values(` + strings.Join(values, ",") + `)
 returning "id"
   `
 
-  return db.QueryRow(sql, args...).Scan(&row.ID)
+  psName := preparedName("pgxdataInsertCustomer", sql)
+
+  return prepareQueryRow(db, psName, sql, args...).Scan(&row.ID)
 }
 
 func UpdateCustomer(db Queryer,
@@ -127,7 +130,9 @@ func UpdateCustomer(db Queryer,
 
   sql := `update "customer" set ` + strings.Join(sets, ", ") + ` where `  + `"id"=` + args.Append(id)
 
-  commandTag, err := db.Exec(sql, args...)
+  psName := preparedName("pgxdataUpdateCustomer", sql)
+
+  commandTag, err := prepareExec(db, psName, sql, args...)
   if err != nil {
     return err
   }
@@ -144,7 +149,7 @@ func DeleteCustomer(db Queryer,
 
   sql := `delete from "customer" where `  + `"id"=` + args.Append(id)
 
-  commandTag, err := db.Exec(sql, args...)
+  commandTag, err := prepareExec(db, "pgxdataDeleteCustomer", sql, args...)
   if err != nil {
     return err
   }

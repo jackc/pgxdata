@@ -12,22 +12,23 @@ type Blob struct {
   Payload Bytes
 }
 
+const countBlobSQL = `select count(*) from "blob"`
+
 func CountBlob(db Queryer) (int64, error) {
   var n int64
-  sql := `select count(*) from "blob"`
-  err := db.QueryRow(sql).Scan(&n)
+  err := prepareQueryRow(db, "pgxdataCountBlob", countBlobSQL).Scan(&n)
   return n, err
 }
 
-func SelectAllBlob(db Queryer) ([]Blob, error) {
-  sql := `select
+const SelectAllBlobSQL = `select
   "id",
   "payload"
 from "blob"`
 
+func SelectAllBlob(db Queryer) ([]Blob, error) {
   var rows []Blob
 
-  dbRows, err := db.Query(sql)
+  dbRows, err := prepareQuery(db, "pgxdataSelectAllBlob", SelectAllBlobSQL)
   if err != nil {
     return nil, err
   }
@@ -48,18 +49,18 @@ from "blob"`
   return rows, nil
 }
 
-func SelectBlobByPK(
-  db Queryer,
-  id int32,
-) (*Blob, error) {
-  sql := `select
+const selectBlobByPKSQL = `select
   "id",
   "payload"
 from "blob"
 where "id"=$1`
 
+func SelectBlobByPK(
+  db Queryer,
+  id int32,
+) (*Blob, error) {
   var row Blob
-  err := db.QueryRow(sql , id).Scan(
+  err := prepareQueryRow(db, "pgxdataSelectBlobByPK", selectBlobByPKSQL, id).Scan(
 &row.ID,
     &row.Payload,
     )
@@ -86,7 +87,9 @@ values(` + strings.Join(values, ",") + `)
 returning "id"
   `
 
-  return db.QueryRow(sql, args...).Scan(&row.ID)
+  psName := preparedName("pgxdataInsertBlob", sql)
+
+  return prepareQueryRow(db, psName, sql, args...).Scan(&row.ID)
 }
 
 func UpdateBlob(db Queryer,
@@ -106,7 +109,9 @@ func UpdateBlob(db Queryer,
 
   sql := `update "blob" set ` + strings.Join(sets, ", ") + ` where `  + `"id"=` + args.Append(id)
 
-  commandTag, err := db.Exec(sql, args...)
+  psName := preparedName("pgxdataUpdateBlob", sql)
+
+  commandTag, err := prepareExec(db, psName, sql, args...)
   if err != nil {
     return err
   }
@@ -123,7 +128,7 @@ func DeleteBlob(db Queryer,
 
   sql := `delete from "blob" where `  + `"id"=` + args.Append(id)
 
-  commandTag, err := db.Exec(sql, args...)
+  commandTag, err := prepareExec(db, "pgxdataDeleteBlob", sql, args...)
   if err != nil {
     return err
   }

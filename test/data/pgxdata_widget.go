@@ -13,23 +13,24 @@ type Widget struct {
   Weight Int16
 }
 
+const countWidgetSQL = `select count(*) from "widget"`
+
 func CountWidget(db Queryer) (int64, error) {
   var n int64
-  sql := `select count(*) from "widget"`
-  err := db.QueryRow(sql).Scan(&n)
+  err := prepareQueryRow(db, "pgxdataCountWidget", countWidgetSQL).Scan(&n)
   return n, err
 }
 
-func SelectAllWidget(db Queryer) ([]Widget, error) {
-  sql := `select
+const SelectAllWidgetSQL = `select
   "id",
   "name",
   "weight"
 from "widget"`
 
+func SelectAllWidget(db Queryer) ([]Widget, error) {
   var rows []Widget
 
-  dbRows, err := db.Query(sql)
+  dbRows, err := prepareQuery(db, "pgxdataSelectAllWidget", SelectAllWidgetSQL)
   if err != nil {
     return nil, err
   }
@@ -51,19 +52,19 @@ from "widget"`
   return rows, nil
 }
 
-func SelectWidgetByPK(
-  db Queryer,
-  id int64,
-) (*Widget, error) {
-  sql := `select
+const selectWidgetByPKSQL = `select
   "id",
   "name",
   "weight"
 from "widget"
 where "id"=$1`
 
+func SelectWidgetByPK(
+  db Queryer,
+  id int64,
+) (*Widget, error) {
   var row Widget
-  err := db.QueryRow(sql , id).Scan(
+  err := prepareQueryRow(db, "pgxdataSelectWidgetByPK", selectWidgetByPKSQL, id).Scan(
 &row.ID,
     &row.Name,
     &row.Weight,
@@ -92,7 +93,9 @@ values(` + strings.Join(values, ",") + `)
 returning "id"
   `
 
-  return db.QueryRow(sql, args...).Scan(&row.ID)
+  psName := preparedName("pgxdataInsertWidget", sql)
+
+  return prepareQueryRow(db, psName, sql, args...).Scan(&row.ID)
 }
 
 func UpdateWidget(db Queryer,
@@ -113,7 +116,9 @@ func UpdateWidget(db Queryer,
 
   sql := `update "widget" set ` + strings.Join(sets, ", ") + ` where `  + `"id"=` + args.Append(id)
 
-  commandTag, err := db.Exec(sql, args...)
+  psName := preparedName("pgxdataUpdateWidget", sql)
+
+  commandTag, err := prepareExec(db, psName, sql, args...)
   if err != nil {
     return err
   }
@@ -130,7 +135,7 @@ func DeleteWidget(db Queryer,
 
   sql := `delete from "widget" where `  + `"id"=` + args.Append(id)
 
-  commandTag, err := db.Exec(sql, args...)
+  commandTag, err := prepareExec(db, "pgxdataDeleteWidget", sql, args...)
   if err != nil {
     return err
   }

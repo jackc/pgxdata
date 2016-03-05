@@ -13,23 +13,24 @@ type Semester struct {
   Description String
 }
 
+const countSemesterSQL = `select count(*) from "semester"`
+
 func CountSemester(db Queryer) (int64, error) {
   var n int64
-  sql := `select count(*) from "semester"`
-  err := db.QueryRow(sql).Scan(&n)
+  err := prepareQueryRow(db, "pgxdataCountSemester", countSemesterSQL).Scan(&n)
   return n, err
 }
 
-func SelectAllSemester(db Queryer) ([]Semester, error) {
-  sql := `select
+const SelectAllSemesterSQL = `select
   "year",
   "season",
   "description"
 from "semester"`
 
+func SelectAllSemester(db Queryer) ([]Semester, error) {
   var rows []Semester
 
-  dbRows, err := db.Query(sql)
+  dbRows, err := prepareQuery(db, "pgxdataSelectAllSemester", SelectAllSemesterSQL)
   if err != nil {
     return nil, err
   }
@@ -51,20 +52,20 @@ from "semester"`
   return rows, nil
 }
 
-func SelectSemesterByPK(
-  db Queryer,
-  year int16,
-  season string,
-) (*Semester, error) {
-  sql := `select
+const selectSemesterByPKSQL = `select
   "year",
   "season",
   "description"
 from "semester"
 where "year"=$1 and "season"=$2`
 
+func SelectSemesterByPK(
+  db Queryer,
+  year int16,
+  season string,
+) (*Semester, error) {
   var row Semester
-  err := db.QueryRow(sql , year, season).Scan(
+  err := prepareQueryRow(db, "pgxdataSelectSemesterByPK", selectSemesterByPKSQL, year, season).Scan(
 &row.Year,
     &row.Season,
     &row.Description,
@@ -93,7 +94,9 @@ values(` + strings.Join(values, ",") + `)
 returning "year", "season"
   `
 
-  return db.QueryRow(sql, args...).Scan(&row.Year, &row.Season)
+  psName := preparedName("pgxdataInsertSemester", sql)
+
+  return prepareQueryRow(db, psName, sql, args...).Scan(&row.Year, &row.Season)
 }
 
 func UpdateSemester(db Queryer,
@@ -115,7 +118,9 @@ func UpdateSemester(db Queryer,
 
   sql := `update "semester" set ` + strings.Join(sets, ", ") + ` where `  + `"year"=` + args.Append(year) + ` and "season"=` + args.Append(season)
 
-  commandTag, err := db.Exec(sql, args...)
+  psName := preparedName("pgxdataUpdateSemester", sql)
+
+  commandTag, err := prepareExec(db, psName, sql, args...)
   if err != nil {
     return err
   }
@@ -133,7 +138,7 @@ func DeleteSemester(db Queryer,
 
   sql := `delete from "semester" where `  + `"year"=` + args.Append(year) + ` and "season"=` + args.Append(season)
 
-  commandTag, err := db.Exec(sql, args...)
+  commandTag, err := prepareExec(db, "pgxdataDeleteSemester", sql, args...)
   if err != nil {
     return err
   }

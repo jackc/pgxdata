@@ -1,11 +1,11 @@
-func SelectAll{{.StructName}}(db Queryer) ([]{{.StructName}}, error) {
-  sql := `select{{ range $i, $column := .Columns}}{{if $i}},{{end}}
+const SelectAll{{.StructName}}SQL = `select{{ range $i, $column := .Columns}}{{if $i}},{{end}}
   "{{$column.ColumnName}}"{{end}}
 from "{{.TableName}}"`
 
+func SelectAll{{.StructName}}(db Queryer) ([]{{.StructName}}, error) {
   var rows []{{.StructName}}
 
-  dbRows, err := db.Query(sql)
+  dbRows, err := prepareQuery(db, "pgxdataSelectAll{{.StructName}}", SelectAll{{.StructName}}SQL)
   if err != nil {
     return nil, err
   }

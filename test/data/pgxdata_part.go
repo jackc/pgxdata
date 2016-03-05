@@ -12,22 +12,23 @@ type Part struct {
   Description String
 }
 
+const countPartSQL = `select count(*) from "part"`
+
 func CountPart(db Queryer) (int64, error) {
   var n int64
-  sql := `select count(*) from "part"`
-  err := db.QueryRow(sql).Scan(&n)
+  err := prepareQueryRow(db, "pgxdataCountPart", countPartSQL).Scan(&n)
   return n, err
 }
 
-func SelectAllPart(db Queryer) ([]Part, error) {
-  sql := `select
+const SelectAllPartSQL = `select
   "code",
   "description"
 from "part"`
 
+func SelectAllPart(db Queryer) ([]Part, error) {
   var rows []Part
 
-  dbRows, err := db.Query(sql)
+  dbRows, err := prepareQuery(db, "pgxdataSelectAllPart", SelectAllPartSQL)
   if err != nil {
     return nil, err
   }
@@ -48,18 +49,18 @@ from "part"`
   return rows, nil
 }
 
-func SelectPartByPK(
-  db Queryer,
-  code string,
-) (*Part, error) {
-  sql := `select
+const selectPartByPKSQL = `select
   "code",
   "description"
 from "part"
 where "code"=$1`
 
+func SelectPartByPK(
+  db Queryer,
+  code string,
+) (*Part, error) {
   var row Part
-  err := db.QueryRow(sql , code).Scan(
+  err := prepareQueryRow(db, "pgxdataSelectPartByPK", selectPartByPKSQL, code).Scan(
 &row.Code,
     &row.Description,
     )
@@ -86,7 +87,9 @@ values(` + strings.Join(values, ",") + `)
 returning "code"
   `
 
-  return db.QueryRow(sql, args...).Scan(&row.Code)
+  psName := preparedName("pgxdataInsertPart", sql)
+
+  return prepareQueryRow(db, psName, sql, args...).Scan(&row.Code)
 }
 
 func UpdatePart(db Queryer,
@@ -106,7 +109,9 @@ func UpdatePart(db Queryer,
 
   sql := `update "part" set ` + strings.Join(sets, ", ") + ` where `  + `"code"=` + args.Append(code)
 
-  commandTag, err := db.Exec(sql, args...)
+  psName := preparedName("pgxdataUpdatePart", sql)
+
+  commandTag, err := prepareExec(db, psName, sql, args...)
   if err != nil {
     return err
   }
@@ -123,7 +128,7 @@ func DeletePart(db Queryer,
 
   sql := `delete from "part" where `  + `"code"=` + args.Append(code)
 
-  commandTag, err := db.Exec(sql, args...)
+  commandTag, err := prepareExec(db, "pgxdataDeletePart", sql, args...)
   if err != nil {
     return err
   }

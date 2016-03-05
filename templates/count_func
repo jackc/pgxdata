@@ -1,6 +1,7 @@
+const count{{.StructName}}SQL = `select count(*) from "{{.TableName}}"`
+
 func Count{{.StructName}}(db Queryer) (int64, error) {
   var n int64
-  sql := `select count(*) from "{{.TableName}}"`
-  err := db.QueryRow(sql).Scan(&n)
+  err := prepareQueryRow(db, "pgxdataCount{{.StructName}}", count{{.StructName}}SQL).Scan(&n)
   return n, err
 }

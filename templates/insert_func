@@ -11,5 +11,7 @@ values(` + strings.Join(values, ",") + `)
 returning {{ range $i, $column := .PrimaryKeyColumns}}{{if $i}}, {{end}}"{{$column.ColumnName}}"{{end}}
   `
 
-  return db.QueryRow(sql, args...).Scan({{ range $i, $column := .PrimaryKeyColumns}}{{if $i}}, {{end}}&row.{{$column.FieldName}}{{end}})
+  psName := preparedName("pgxdataInsert{{.StructName}}", sql)
+
+  return prepareQueryRow(db, psName, sql, args...).Scan({{ range $i, $column := .PrimaryKeyColumns}}{{if $i}}, {{end}}&row.{{$column.FieldName}}{{end}})
 }

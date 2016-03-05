@@ -13,23 +13,24 @@ type IPTypes struct {
   IPCidr IPNet
 }
 
+const countIPTypesSQL = `select count(*) from "ip_types"`
+
 func CountIPTypes(db Queryer) (int64, error) {
   var n int64
-  sql := `select count(*) from "ip_types"`
-  err := db.QueryRow(sql).Scan(&n)
+  err := prepareQueryRow(db, "pgxdataCountIPTypes", countIPTypesSQL).Scan(&n)
   return n, err
 }
 
-func SelectAllIPTypes(db Queryer) ([]IPTypes, error) {
-  sql := `select
+const SelectAllIPTypesSQL = `select
   "id",
   "ip_inet",
   "ip_cidr"
 from "ip_types"`
 
+func SelectAllIPTypes(db Queryer) ([]IPTypes, error) {
   var rows []IPTypes
 
-  dbRows, err := db.Query(sql)
+  dbRows, err := prepareQuery(db, "pgxdataSelectAllIPTypes", SelectAllIPTypesSQL)
   if err != nil {
     return nil, err
   }
@@ -51,19 +52,19 @@ from "ip_types"`
   return rows, nil
 }
 
-func SelectIPTypesByPK(
-  db Queryer,
-  id int32,
-) (*IPTypes, error) {
-  sql := `select
+const selectIPTypesByPKSQL = `select
   "id",
   "ip_inet",
   "ip_cidr"
 from "ip_types"
 where "id"=$1`
 
+func SelectIPTypesByPK(
+  db Queryer,
+  id int32,
+) (*IPTypes, error) {
   var row IPTypes
-  err := db.QueryRow(sql , id).Scan(
+  err := prepareQueryRow(db, "pgxdataSelectIPTypesByPK", selectIPTypesByPKSQL, id).Scan(
 &row.ID,
     &row.IPInet,
     &row.IPCidr,
@@ -92,7 +93,9 @@ values(` + strings.Join(values, ",") + `)
 returning "id"
   `
 
-  return db.QueryRow(sql, args...).Scan(&row.ID)
+  psName := preparedName("pgxdataInsertIPTypes", sql)
+
+  return prepareQueryRow(db, psName, sql, args...).Scan(&row.ID)
 }
 
 func UpdateIPTypes(db Queryer,
@@ -113,7 +116,9 @@ func UpdateIPTypes(db Queryer,
 
   sql := `update "ip_types" set ` + strings.Join(sets, ", ") + ` where `  + `"id"=` + args.Append(id)
 
-  commandTag, err := db.Exec(sql, args...)
+  psName := preparedName("pgxdataUpdateIPTypes", sql)
+
+  commandTag, err := prepareExec(db, psName, sql, args...)
   if err != nil {
     return err
   }
@@ -130,7 +135,7 @@ func DeleteIPTypes(db Queryer,
 
   sql := `delete from "ip_types" where `  + `"id"=` + args.Append(id)
 
-  commandTag, err := db.Exec(sql, args...)
+  commandTag, err := prepareExec(db, "pgxdataDeleteIPTypes", sql, args...)
   if err != nil {
     return err
   }

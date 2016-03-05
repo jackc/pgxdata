@@ -15,15 +15,15 @@ type RenamedFieldCustomer struct {
   CreationTime Time
 }
 
+const countRenamedFieldCustomerSQL = `select count(*) from "customer"`
+
 func CountRenamedFieldCustomer(db Queryer) (int64, error) {
   var n int64
-  sql := `select count(*) from "customer"`
-  err := db.QueryRow(sql).Scan(&n)
+  err := prepareQueryRow(db, "pgxdataCountRenamedFieldCustomer", countRenamedFieldCustomerSQL).Scan(&n)
   return n, err
 }
 
-func SelectAllRenamedFieldCustomer(db Queryer) ([]RenamedFieldCustomer, error) {
-  sql := `select
+const SelectAllRenamedFieldCustomerSQL = `select
   "id",
   "first_name",
   "last_name",
@@ -31,9 +31,10 @@ func SelectAllRenamedFieldCustomer(db Queryer) ([]RenamedFieldCustomer, error) {
   "creation_time"
 from "customer"`
 
+func SelectAllRenamedFieldCustomer(db Queryer) ([]RenamedFieldCustomer, error) {
   var rows []RenamedFieldCustomer
 
-  dbRows, err := db.Query(sql)
+  dbRows, err := prepareQuery(db, "pgxdataSelectAllRenamedFieldCustomer", SelectAllRenamedFieldCustomerSQL)
   if err != nil {
     return nil, err
   }
@@ -57,11 +58,7 @@ from "customer"`
   return rows, nil
 }
 
-func SelectRenamedFieldCustomerByPK(
-  db Queryer,
-  id int32,
-) (*RenamedFieldCustomer, error) {
-  sql := `select
+const selectRenamedFieldCustomerByPKSQL = `select
   "id",
   "first_name",
   "last_name",
@@ -70,8 +67,12 @@ func SelectRenamedFieldCustomerByPK(
 from "customer"
 where "id"=$1`
 
+func SelectRenamedFieldCustomerByPK(
+  db Queryer,
+  id int32,
+) (*RenamedFieldCustomer, error) {
   var row RenamedFieldCustomer
-  err := db.QueryRow(sql , id).Scan(
+  err := prepareQueryRow(db, "pgxdataSelectRenamedFieldCustomerByPK", selectRenamedFieldCustomerByPKSQL, id).Scan(
 &row.ID,
     &row.FName,
     &row.LastName,
@@ -104,7 +105,9 @@ values(` + strings.Join(values, ",") + `)
 returning "id"
   `
 
-  return db.QueryRow(sql, args...).Scan(&row.ID)
+  psName := preparedName("pgxdataInsertRenamedFieldCustomer", sql)
+
+  return prepareQueryRow(db, psName, sql, args...).Scan(&row.ID)
 }
 
 func UpdateRenamedFieldCustomer(db Queryer,
@@ -127,7 +130,9 @@ func UpdateRenamedFieldCustomer(db Queryer,
 
   sql := `update "customer" set ` + strings.Join(sets, ", ") + ` where `  + `"id"=` + args.Append(id)
 
-  commandTag, err := db.Exec(sql, args...)
+  psName := preparedName("pgxdataUpdateRenamedFieldCustomer", sql)
+
+  commandTag, err := prepareExec(db, psName, sql, args...)
   if err != nil {
     return err
   }
@@ -144,7 +149,7 @@ func DeleteRenamedFieldCustomer(db Queryer,
 
   sql := `delete from "customer" where `  + `"id"=` + args.Append(id)
 
-  commandTag, err := db.Exec(sql, args...)
+  commandTag, err := prepareExec(db, "pgxdataDeleteRenamedFieldCustomer", sql, args...)
   if err != nil {
     return err
   }

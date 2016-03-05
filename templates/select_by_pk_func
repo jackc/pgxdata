@@ -1,14 +1,14 @@
-func Select{{.StructName}}ByPK(
-  db Queryer{{range .PrimaryKeyColumns}},
-  {{.VarName}} {{.GoType}}{{end}},
-) (*{{.StructName}}, error) {
-  sql := `select{{ range $i, $column := .Columns}}{{if $i}},{{end}}
+const select{{.StructName}}ByPKSQL = `select{{ range $i, $column := .Columns}}{{if $i}},{{end}}
   "{{$column.ColumnName}}"{{end}}
 from "{{.TableName}}"
 where {{ range $i, $column := .PrimaryKeyColumns}}{{if $i}} and {{end}}"{{$column.ColumnName}}"={{pkPlaceholder $i}}{{end}}`
 
+func Select{{.StructName}}ByPK(
+  db Queryer{{range .PrimaryKeyColumns}},
+  {{.VarName}} {{.GoType}}{{end}},
+) (*{{.StructName}}, error) {
   var row {{.StructName}}
-  err := db.QueryRow(sql {{range .PrimaryKeyColumns}}, {{.VarName}}{{end}}).Scan(
+  err := prepareQueryRow(db, "pgxdataSelect{{.StructName}}ByPK", select{{.StructName}}ByPKSQL{{range .PrimaryKeyColumns}}, {{.VarName}}{{end}}).Scan(
 {{range .Columns}}&row.{{.FieldName}},
     {{end}})
   if err == pgx.ErrNoRows {
