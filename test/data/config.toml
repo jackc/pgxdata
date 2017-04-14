@@ -29,7 +29,3 @@ struct_name = "RenamedFieldCustomer"
 [[tables]]
 table_name = "blob"
 struct_name = "Blob"
-
-[[tables]]
-table_name = "ip_types"
-struct_name = "IPTypes"

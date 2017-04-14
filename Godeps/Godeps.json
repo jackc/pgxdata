@@ -1,6 +1,7 @@
 {
 	"ImportPath": "github.com/jackc/pgxdata",
 	"GoVersion": "go1.6",
+	"GodepVersion": "v79",
 	"Deps": [
 		{
 			"ImportPath": "github.com/BurntSushi/toml",
@@ -13,8 +14,8 @@
 		},
 		{
 			"ImportPath": "github.com/jackc/pgx",
-			"Comment": "v2.7.1-34-gc6b6d7b",
-			"Rev": "c6b6d7bad715f16cbb46e73356541fa4dd1f9333"
+			"Comment": "v2.9.0-290-ga45b1e0",
+			"Rev": "a45b1e05a4ac50476addd78284a2e210b6d15a17"
 		},
 		{
 			"ImportPath": "github.com/spf13/cobra",
@@ -23,6 +24,26 @@
 		{
 			"ImportPath": "github.com/spf13/pflag",
 			"Rev": "7f60f83a2c81bc3c3c0d5297f61ddfa68da9d3b7"
+		},
+		{
+			"ImportPath": "github.com/jackc/pgx/chunkreader",
+			"Comment": "v2.9.0-290-ga45b1e0",
+			"Rev": "a45b1e05a4ac50476addd78284a2e210b6d15a17"
+		},
+		{
+			"ImportPath": "github.com/jackc/pgx/internal/sanitize",
+			"Comment": "v2.9.0-290-ga45b1e0",
+			"Rev": "a45b1e05a4ac50476addd78284a2e210b6d15a17"
+		},
+		{
+			"ImportPath": "github.com/jackc/pgx/pgtype",
+			"Comment": "v2.9.0-290-ga45b1e0",
+			"Rev": "a45b1e05a4ac50476addd78284a2e210b6d15a17"
+		},
+		{
+			"ImportPath": "github.com/jackc/pgx/pgio",
+			"Comment": "v2.9.0-290-ga45b1e0",
+			"Rev": "a45b1e05a4ac50476addd78284a2e210b6d15a17"
 		}
 	]
 }

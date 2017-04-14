@@ -2,6 +2,8 @@ package pgx
 
 import (
 	"errors"
+
+	"github.com/jackc/pgx/pgtype"
 )
 
 // ValueReader is used by the Scanner interface to decode values.
@@ -37,7 +39,7 @@ func (r *ValueReader) ReadByte() byte {
 		return 0
 	}
 
-	r.valueBytesRemaining -= 1
+	r.valueBytesRemaining--
 	if r.valueBytesRemaining < 0 {
 		r.Fatal(errors.New("read past end of value"))
 		return 0
@@ -60,6 +62,20 @@ func (r *ValueReader) ReadInt16() int16 {
 	return r.mr.readInt16()
 }
 
+func (r *ValueReader) ReadUint16() uint16 {
+	if r.err != nil {
+		return 0
+	}
+
+	r.valueBytesRemaining -= 2
+	if r.valueBytesRemaining < 0 {
+		r.Fatal(errors.New("read past end of value"))
+		return 0
+	}
+
+	return r.mr.readUint16()
+}
+
 func (r *ValueReader) ReadInt32() int32 {
 	if r.err != nil {
 		return 0
@@ -72,6 +88,20 @@ func (r *ValueReader) ReadInt32() int32 {
 	}
 
 	return r.mr.readInt32()
+}
+
+func (r *ValueReader) ReadUint32() uint32 {
+	if r.err != nil {
+		return 0
+	}
+
+	r.valueBytesRemaining -= 4
+	if r.valueBytesRemaining < 0 {
+		r.Fatal(errors.New("read past end of value"))
+		return 0
+	}
+
+	return r.mr.readUint32()
 }
 
 func (r *ValueReader) ReadInt64() int64 {
@@ -88,8 +118,8 @@ func (r *ValueReader) ReadInt64() int64 {
 	return r.mr.readInt64()
 }
 
-func (r *ValueReader) ReadOid() Oid {
-	return Oid(r.ReadInt32())
+func (r *ValueReader) ReadOid() pgtype.Oid {
+	return pgtype.Oid(r.ReadUint32())
 }
 
 // ReadString reads count bytes and returns as string
@@ -125,4 +155,12 @@ func (r *ValueReader) ReadBytes(count int32) []byte {
 	}
 
 	return r.mr.readBytes(count)
+}
+
+// bytes is a compatibility function for pgtype.TextDecoder and pgtype.BinaryDecoder
+func (r *ValueReader) bytes() []byte {
+	if r.Len() >= 0 {
+		return r.ReadBytes(r.Len())
+	}
+	return nil
 }

@@ -5,6 +5,7 @@ import (
   "strings"
 
   "github.com/jackc/pgx"
+  "github.com/jackc/pgx/pgtype"
 )
 
 type {{.StructName}} struct {

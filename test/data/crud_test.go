@@ -2,10 +2,9 @@ package data_test
 
 import (
 	"bytes"
-	"fmt"
-	"net"
 	"testing"
 
+	"github.com/jackc/pgx/pgtype"
 	"github.com/jackc/pgxdata/test/data"
 )
 
@@ -24,9 +23,9 @@ func TestCount(t *testing.T) {
 	}
 
 	err = data.InsertCustomer(tx, &data.Customer{
-		FirstName: data.String{Value: "John", Status: data.Present},
-		LastName:  data.String{Value: "Smith", Status: data.Present},
-		BirthDate: data.Time{Status: data.Null},
+		FirstName: pgtype.Varchar{String: "John", Status: pgtype.Present},
+		LastName:  pgtype.Varchar{String: "Smith", Status: pgtype.Present},
+		BirthDate: pgtype.Date{Status: pgtype.Null},
 	})
 	if err != nil {
 		t.Fatalf("InsertCustomer unexpectedly failed: %v", err)
@@ -56,9 +55,9 @@ func TestSelectAll(t *testing.T) {
 	}
 
 	insertedRow := data.Customer{
-		FirstName: data.String{Value: "John", Status: data.Present},
-		LastName:  data.String{Value: "Smith", Status: data.Present},
-		BirthDate: data.Time{Status: data.Null},
+		FirstName: pgtype.Varchar{String: "John", Status: pgtype.Present},
+		LastName:  pgtype.Varchar{String: "Smith", Status: pgtype.Present},
+		BirthDate: pgtype.Date{Status: pgtype.Null},
 	}
 
 	err = data.InsertCustomer(tx, &insertedRow)
@@ -94,9 +93,9 @@ func TestSelectByPK(t *testing.T) {
 	}
 
 	insertedRow := data.Customer{
-		FirstName: data.String{Value: "John", Status: data.Present},
-		LastName:  data.String{Value: "Smith", Status: data.Present},
-		BirthDate: data.Time{Status: data.Null},
+		FirstName: pgtype.Varchar{String: "John", Status: pgtype.Present},
+		LastName:  pgtype.Varchar{String: "Smith", Status: pgtype.Present},
+		BirthDate: pgtype.Date{Status: pgtype.Null},
 	}
 
 	err = data.InsertCustomer(tx, &insertedRow)
@@ -104,16 +103,16 @@ func TestSelectByPK(t *testing.T) {
 		t.Fatalf("InsertCustomer unexpectedly failed: %v", err)
 	}
 
-	customer, err = data.SelectCustomerByPK(tx, insertedRow.ID.Value)
+	customer, err = data.SelectCustomerByPK(tx, insertedRow.ID.Int)
 	if err != nil {
 		t.Fatalf("SelectCustomerByPK unexpectedly failed: %v", err)
 	}
 
 	if customer.FirstName != insertedRow.FirstName {
-		t.Errorf("Expected FirstName to be %v, but it was %v", data.String{Value: "John", Status: data.Present}, customer.FirstName)
+		t.Errorf("Expected FirstName to be %v, but it was %v", pgtype.Varchar{String: "John", Status: pgtype.Present}, customer.FirstName)
 	}
 	if customer.LastName != insertedRow.LastName {
-		t.Errorf("Expected LastName to be %v, but it was %v", data.String{Value: "Smith", Status: data.Present}, customer.LastName)
+		t.Errorf("Expected LastName to be %v, but it was %v", pgtype.Varchar{String: "Smith", Status: pgtype.Present}, customer.LastName)
 	}
 }
 
@@ -129,8 +128,8 @@ func TestSelectByPKWithInt64PK(t *testing.T) {
 	}
 
 	insertedRow := data.Widget{
-		Name:   data.String{Value: "Foozle", Status: data.Present},
-		Weight: data.Int16{Value: 20, Status: data.Present},
+		Name:   pgtype.Varchar{String: "Foozle", Status: pgtype.Present},
+		Weight: pgtype.Int2{Int: 20, Status: pgtype.Present},
 	}
 
 	err = data.InsertWidget(tx, &insertedRow)
@@ -138,7 +137,7 @@ func TestSelectByPKWithInt64PK(t *testing.T) {
 		t.Fatalf("InsertWidget unexpectedly failed: %v", err)
 	}
 
-	widget, err = data.SelectWidgetByPK(tx, insertedRow.ID.Value)
+	widget, err = data.SelectWidgetByPK(tx, insertedRow.ID.Int)
 	if err != nil {
 		t.Fatalf("SelectWidgetByPK unexpectedly failed: %v", err)
 	}
@@ -163,8 +162,8 @@ func TestSelectByPKWithVarcharNotNamedIDAsPK(t *testing.T) {
 	}
 
 	insertedRow := data.Part{
-		Code:        data.String{Value: "E100", Status: data.Present},
-		Description: data.String{Value: "Engine 100", Status: data.Present},
+		Code:        pgtype.Varchar{String: "E100", Status: pgtype.Present},
+		Description: pgtype.Text{String: "Engine 100", Status: pgtype.Present},
 	}
 
 	err = data.InsertPart(tx, &insertedRow)
@@ -172,7 +171,7 @@ func TestSelectByPKWithVarcharNotNamedIDAsPK(t *testing.T) {
 		t.Fatalf("InsertPart unexpectedly failed: %v", err)
 	}
 
-	part, err = data.SelectPartByPK(tx, insertedRow.Code.Value)
+	part, err = data.SelectPartByPK(tx, insertedRow.Code.String)
 	if err != nil {
 		t.Fatalf("SelectPartByPK unexpectedly failed: %v", err)
 	}
@@ -197,9 +196,9 @@ func TestSelectByPKWithCompositePK(t *testing.T) {
 	}
 
 	insertedRow := data.Semester{
-		Year:        data.Int16{Value: 1999, Status: data.Present},
-		Season:      data.String{Value: "Fall", Status: data.Present},
-		Description: data.String{Value: "Last of the century", Status: data.Present},
+		Year:        pgtype.Int2{Int: 1999, Status: pgtype.Present},
+		Season:      pgtype.Varchar{String: "Fall", Status: pgtype.Present},
+		Description: pgtype.Text{String: "Last of the century", Status: pgtype.Present},
 	}
 
 	err = data.InsertSemester(tx, &insertedRow)
@@ -207,7 +206,7 @@ func TestSelectByPKWithCompositePK(t *testing.T) {
 		t.Fatalf("InsertSemeseter unexpectedly failed: %v", err)
 	}
 
-	semester, err = data.SelectSemesterByPK(tx, insertedRow.Year.Value, insertedRow.Season.Value)
+	semester, err = data.SelectSemesterByPK(tx, insertedRow.Year.Int, insertedRow.Season.String)
 	if err != nil {
 		t.Fatalf("SelectSemesterByPK unexpectedly failed: %v", err)
 	}
@@ -230,8 +229,8 @@ func TestInsert(t *testing.T) {
 	defer tx.Rollback()
 
 	insertedRow := data.Customer{
-		FirstName: data.String{Value: "John", Status: data.Present},
-		LastName:  data.String{Value: "Smith", Status: data.Present},
+		FirstName: pgtype.Varchar{String: "John", Status: pgtype.Present},
+		LastName:  pgtype.Varchar{String: "Smith", Status: pgtype.Present},
 	}
 
 	err := data.InsertCustomer(tx, &insertedRow)
@@ -239,16 +238,16 @@ func TestInsert(t *testing.T) {
 		t.Fatalf("InsertCustomer unexpectedly failed: %v", err)
 	}
 
-	customer, err := data.SelectCustomerByPK(tx, insertedRow.ID.Value)
+	customer, err := data.SelectCustomerByPK(tx, insertedRow.ID.Int)
 	if err != nil {
 		t.Fatalf("SelectCustomerByPK unexpectedly failed: %v", err)
 	}
 
 	if customer.FirstName != insertedRow.FirstName {
-		t.Errorf("Expected FirstName to be %v, but it was %v", data.String{Value: "John", Status: data.Present}, customer.FirstName)
+		t.Errorf("Expected FirstName to be %v, but it was %v", pgtype.Varchar{String: "John", Status: pgtype.Present}, customer.FirstName)
 	}
 	if customer.LastName != insertedRow.LastName {
-		t.Errorf("Expected LastName to be %v, but it was %v", data.String{Value: "Smith", Status: data.Present}, customer.LastName)
+		t.Errorf("Expected LastName to be %v, but it was %v", pgtype.Varchar{String: "Smith", Status: pgtype.Present}, customer.LastName)
 	}
 }
 
@@ -259,9 +258,9 @@ func TestInsertOverridingPK(t *testing.T) {
 	defer tx.Rollback()
 
 	insertedRow := data.Customer{
-		ID:        data.Int32{Value: -2, Status: data.Present},
-		FirstName: data.String{Value: "John", Status: data.Present},
-		LastName:  data.String{Value: "Smith", Status: data.Present},
+		ID:        pgtype.Int4{Int: -2, Status: pgtype.Present},
+		FirstName: pgtype.Varchar{String: "John", Status: pgtype.Present},
+		LastName:  pgtype.Varchar{String: "Smith", Status: pgtype.Present},
 	}
 
 	err := data.InsertCustomer(tx, &insertedRow)
@@ -275,10 +274,10 @@ func TestInsertOverridingPK(t *testing.T) {
 	}
 
 	if customer.FirstName != insertedRow.FirstName {
-		t.Errorf("Expected FirstName to be %v, but it was %v", data.String{Value: "John", Status: data.Present}, customer.FirstName)
+		t.Errorf("Expected FirstName to be %v, but it was %v", pgtype.Varchar{String: "John", Status: pgtype.Present}, customer.FirstName)
 	}
 	if customer.LastName != insertedRow.LastName {
-		t.Errorf("Expected LastName to be %v, but it was %v", data.String{Value: "Smith", Status: data.Present}, customer.LastName)
+		t.Errorf("Expected LastName to be %v, but it was %v", pgtype.Varchar{String: "Smith", Status: pgtype.Present}, customer.LastName)
 	}
 }
 
@@ -289,8 +288,8 @@ func TestUpdate(t *testing.T) {
 	defer tx.Rollback()
 
 	insertedRow := data.Customer{
-		FirstName: data.String{Value: "John", Status: data.Present},
-		LastName:  data.String{Value: "Smith", Status: data.Present},
+		FirstName: pgtype.Varchar{String: "John", Status: pgtype.Present},
+		LastName:  pgtype.Varchar{String: "Smith", Status: pgtype.Present},
 	}
 
 	err := data.InsertCustomer(tx, &insertedRow)
@@ -298,16 +297,16 @@ func TestUpdate(t *testing.T) {
 		t.Fatalf("InsertCustomer unexpectedly failed: %v", err)
 	}
 
-	customer, err := data.SelectCustomerByPK(tx, insertedRow.ID.Value)
+	customer, err := data.SelectCustomerByPK(tx, insertedRow.ID.Int)
 	if err != nil {
 		t.Fatalf("SelectCustomerByPK unexpectedly failed: %v", err)
 	}
 
 	if customer.FirstName != insertedRow.FirstName {
-		t.Errorf("Expected FirstName to be %v, but it was %v", data.String{Value: "John", Status: data.Present}, customer.FirstName)
+		t.Errorf("Expected FirstName to be %v, but it was %v", pgtype.Varchar{String: "John", Status: pgtype.Present}, customer.FirstName)
 	}
 	if customer.LastName != insertedRow.LastName {
-		t.Errorf("Expected LastName to be %v, but it was %v", data.String{Value: "Smith", Status: data.Present}, customer.FirstName)
+		t.Errorf("Expected LastName to be %v, but it was %v", pgtype.Varchar{String: "Smith", Status: pgtype.Present}, customer.FirstName)
 	}
 }
 
@@ -323,9 +322,9 @@ func TestUpdateWithCompositePK(t *testing.T) {
 	}
 
 	insertedRow := data.Semester{
-		Year:        data.Int16{Value: 1999, Status: data.Present},
-		Season:      data.String{Value: "Fall", Status: data.Present},
-		Description: data.String{Value: "Last of the century", Status: data.Present},
+		Year:        pgtype.Int2{Int: 1999, Status: pgtype.Present},
+		Season:      pgtype.Varchar{String: "Fall", Status: pgtype.Present},
+		Description: pgtype.Text{String: "Last of the century", Status: pgtype.Present},
 	}
 
 	err = data.InsertSemester(tx, &insertedRow)
@@ -334,16 +333,16 @@ func TestUpdateWithCompositePK(t *testing.T) {
 	}
 
 	updateAttrs := &data.Semester{
-		Description: data.String{Value: "New value", Status: data.Present},
+		Description: pgtype.Text{String: "New value", Status: pgtype.Present},
 	}
 
 	data.UpdateSemester(tx,
-		insertedRow.Year.Value,
-		insertedRow.Season.Value,
+		insertedRow.Year.Int,
+		insertedRow.Season.String,
 		updateAttrs,
 	)
 
-	semester, err = data.SelectSemesterByPK(tx, insertedRow.Year.Value, insertedRow.Season.Value)
+	semester, err = data.SelectSemesterByPK(tx, insertedRow.Year.Int, insertedRow.Season.String)
 	if err != nil {
 		t.Fatalf("SelectSemesterByPK unexpectedly failed: %v", err)
 	}
@@ -360,8 +359,8 @@ func TestDelete(t *testing.T) {
 	defer tx.Rollback()
 
 	insertedRow := data.Customer{
-		FirstName: data.String{Value: "John", Status: data.Present},
-		LastName:  data.String{Value: "Smith", Status: data.Present},
+		FirstName: pgtype.Varchar{String: "John", Status: pgtype.Present},
+		LastName:  pgtype.Varchar{String: "Smith", Status: pgtype.Present},
 	}
 
 	err := data.InsertCustomer(tx, &insertedRow)
@@ -369,17 +368,17 @@ func TestDelete(t *testing.T) {
 		t.Fatalf("InsertCustomer unexpectedly failed: %v", err)
 	}
 
-	_, err = data.SelectCustomerByPK(tx, insertedRow.ID.Value)
+	_, err = data.SelectCustomerByPK(tx, insertedRow.ID.Int)
 	if err != nil {
 		t.Fatalf("SelectCustomerByPK unexpectedly failed: %v", err)
 	}
 
-	err = data.DeleteCustomer(tx, insertedRow.ID.Value)
+	err = data.DeleteCustomer(tx, insertedRow.ID.Int)
 	if err != nil {
 		t.Fatalf("DeleteCustomer unexpectedly failed: %v", err)
 	}
 
-	_, err = data.SelectCustomerByPK(tx, insertedRow.ID.Value)
+	_, err = data.SelectCustomerByPK(tx, insertedRow.ID.Int)
 	if err != data.ErrNotFound {
 		t.Fatalf("Expected SelectCustomerByPK to return err data.ErrNotFound but it was: %v", err)
 	}
@@ -397,9 +396,9 @@ func TestDeleteWithCompositePK(t *testing.T) {
 	}
 
 	insertedRow := data.Semester{
-		Year:        data.Int16{Value: 1999, Status: data.Present},
-		Season:      data.String{Value: "Fall", Status: data.Present},
-		Description: data.String{Value: "Last of the century", Status: data.Present},
+		Year:        pgtype.Int2{Int: 1999, Status: pgtype.Present},
+		Season:      pgtype.Varchar{String: "Fall", Status: pgtype.Present},
+		Description: pgtype.Text{String: "Last of the century", Status: pgtype.Present},
 	}
 
 	err = data.InsertSemester(tx, &insertedRow)
@@ -407,17 +406,17 @@ func TestDeleteWithCompositePK(t *testing.T) {
 		t.Fatalf("InsertSemeseter unexpectedly failed: %v", err)
 	}
 
-	_, err = data.SelectSemesterByPK(tx, insertedRow.Year.Value, insertedRow.Season.Value)
+	_, err = data.SelectSemesterByPK(tx, insertedRow.Year.Int, insertedRow.Season.String)
 	if err != nil {
 		t.Fatalf("SelectSemesterByPK unexpectedly failed: %v", err)
 	}
 
 	data.DeleteSemester(tx,
-		insertedRow.Year.Value,
-		insertedRow.Season.Value,
+		insertedRow.Year.Int,
+		insertedRow.Season.String,
 	)
 
-	_, err = data.SelectSemesterByPK(tx, insertedRow.Year.Value, insertedRow.Season.Value)
+	_, err = data.SelectSemesterByPK(tx, insertedRow.Year.Int, insertedRow.Season.String)
 	if err != data.ErrNotFound {
 		t.Fatalf("Expected SelectSemesterByPK to return err data.ErrNotFound but it was: %v", err)
 	}
@@ -430,8 +429,8 @@ func TestMappingOfRenamedField(t *testing.T) {
 	defer tx.Rollback()
 
 	insertedRow := data.RenamedFieldCustomer{
-		FName:    data.String{Value: "John", Status: data.Present},
-		LastName: data.String{Value: "Smith", Status: data.Present},
+		FName:    pgtype.Varchar{String: "John", Status: pgtype.Present},
+		LastName: pgtype.Varchar{String: "Smith", Status: pgtype.Present},
 	}
 
 	err := data.InsertRenamedFieldCustomer(tx, &insertedRow)
@@ -439,13 +438,13 @@ func TestMappingOfRenamedField(t *testing.T) {
 		t.Fatalf("InsertRenamedFieldCustomer unexpectedly failed: %v", err)
 	}
 
-	customer, err := data.SelectRenamedFieldCustomerByPK(tx, insertedRow.ID.Value)
+	customer, err := data.SelectRenamedFieldCustomerByPK(tx, insertedRow.ID.Int)
 	if err != nil {
 		t.Fatalf("SelectRenamedFieldCustomerByPK unexpectedly failed: %v", err)
 	}
 
 	if customer.FName != insertedRow.FName {
-		t.Errorf("Expected FName to be %v, but it was %v", data.String{Value: "John", Status: data.Present}, customer.FName)
+		t.Errorf("Expected FName to be %v, but it was %v", pgtype.Varchar{String: "John", Status: pgtype.Present}, customer.FName)
 	}
 }
 
@@ -456,7 +455,7 @@ func TestByteaByteSliceMapping(t *testing.T) {
 	defer tx.Rollback()
 
 	insertedRow := data.Blob{
-		Payload: data.Bytes{Value: []byte("Hello"), Status: data.Present},
+		Payload: pgtype.Bytea{Bytes: []byte("Hello"), Status: pgtype.Present},
 	}
 
 	err := data.InsertBlob(tx, &insertedRow)
@@ -464,51 +463,12 @@ func TestByteaByteSliceMapping(t *testing.T) {
 		t.Fatalf("InsertBlob unexpectedly failed: %v", err)
 	}
 
-	blob, err := data.SelectBlobByPK(tx, insertedRow.ID.Value)
+	blob, err := data.SelectBlobByPK(tx, insertedRow.ID.Int)
 	if err != nil {
 		t.Fatalf("SelectBlobByPK unexpectedly failed: %v", err)
 	}
 
-	if bytes.Compare(blob.Payload.Value, insertedRow.Payload.Value) != 0 {
+	if bytes.Compare(blob.Payload.Bytes, insertedRow.Payload.Bytes) != 0 {
 		t.Errorf("Expected Payload to be %v, but it was %v", insertedRow.Payload, blob.Payload)
-	}
-}
-
-func TestIPNetInetCidrMapping(t *testing.T) {
-	t.Parallel()
-
-	tx := begin(t)
-	defer tx.Rollback()
-
-	_, ipv4, err := net.ParseCIDR("127.0.0.1/32")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	insertedRow := data.IPTypes{
-		IPInet: data.IPNet{Value: *ipv4, Status: data.Present},
-		IPCidr: data.IPNet{Value: *ipv4, Status: data.Present},
-	}
-
-	err = data.InsertIPTypes(tx, &insertedRow)
-	if err != nil {
-		t.Fatalf("InsertIPTypes unexpectedly failed: %v", err)
-	}
-
-	ipTypes, err := data.SelectIPTypesByPK(tx, insertedRow.ID.Value)
-	if err != nil {
-		t.Fatalf("SelectIPTypesByPK unexpectedly failed: %v", err)
-	}
-
-	fmt.Println(ipv4.String())
-	fmt.Println(insertedRow.IPInet.String())
-	fmt.Println(ipTypes.IPInet.String())
-
-	if insertedRow.IPInet.String() != ipTypes.IPInet.String() {
-		t.Errorf("Expected IPInet to be %v, but it was %v", insertedRow.IPInet.String(), ipTypes.IPInet.String())
-	}
-
-	if insertedRow.IPCidr.String() != ipTypes.IPCidr.String() {
-		t.Errorf("Expected IPCidr to be %v, but it was %v", insertedRow.IPCidr, ipTypes.IPCidr)
 	}
 }

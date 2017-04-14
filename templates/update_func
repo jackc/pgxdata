@@ -5,7 +5,9 @@ func Update{{.StructName}}(db Queryer{{range .PrimaryKeyColumns}},
   sets := make([]string, 0, {{len .Columns}})
   args := pgx.QueryArgs(make([]interface{}, 0, {{len .Columns}}))
 
-{{range .Columns}}  row.{{.FieldName}}.addUpdate(`{{.ColumnName}}`, &sets, &args)
+{{range .Columns}}  if row.{{.FieldName}}.Status != pgtype.Undefined {
+    sets = append(sets, `{{.ColumnName}}`+"="+args.Append(&row.{{.FieldName}}))
+  }
 {{end}}
 
   if len(sets) == 0 {

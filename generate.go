@@ -26,22 +26,21 @@ type intBoxType struct {
 }
 
 type initData struct {
-	PkgName     string
-	Version     string
-	BoxTypes    []boxType
-	IntBoxTypes []intBoxType
+	PkgName string
+	Version string
 }
 
 var pgToBoxTypeMap = map[string]string{
-	"bigint":            "Int64",
-	"integer":           "Int32",
-	"smallint":          "Int16",
-	"character varying": "String",
-	"date":              "Time",
-	"timestamp with time zone": "Time",
-	"inet":  "IPNet",
-	"cidr":  "IPNet",
-	"bytea": "Bytes",
+	"bigint":            "pgtype.Int8",
+	"integer":           "pgtype.Int4",
+	"smallint":          "pgtype.Int2",
+	"character varying": "pgtype.Varchar",
+	"text":              "pgtype.Text",
+	"date":              "pgtype.Date",
+	"timestamp with time zone": "pgtype.Timestamptz",
+	"inet":  "pgtype.Inet",
+	"cidr":  "pgtype.Cidr",
+	"bytea": "pgtype.Bytea",
 }
 
 var pgToGoTypeMap = map[string]string{
@@ -49,6 +48,7 @@ var pgToGoTypeMap = map[string]string{
 	"integer":           "int32",
 	"smallint":          "int16",
 	"character varying": "string",
+	"text":              "string",
 	"date":              "time.Time",
 	"timestamp with time zone": "time.Time",
 	"bytea":                    "[]byte",
@@ -129,27 +129,12 @@ func generateCmd(cmd *cobra.Command, args []string) {
 	supportData := initData{
 		PkgName: c.Package,
 		Version: VERSION,
-		BoxTypes: []boxType{
-			{Name: "Bool", ValueType: "bool", FormatCode: "pgx.BinaryFormatCode"},
-			{Name: "Int16", ValueType: "int16", FormatCode: "pgx.BinaryFormatCode"},
-			{Name: "Int32", ValueType: "int32", FormatCode: "pgx.BinaryFormatCode"},
-			{Name: "Int64", ValueType: "int64", FormatCode: "pgx.BinaryFormatCode"},
-			{Name: "String", ValueType: "string", FormatCode: "pgx.TextFormatCode"},
-			{Name: "Time", ValueType: "time.Time", FormatCode: "pgx.BinaryFormatCode"},
-			{Name: "IPNet", ValueType: "net.IPNet", FormatCode: "pgx.BinaryFormatCode"},
-		},
-		IntBoxTypes: []intBoxType{
-			{Name: "Int16", BitSize: 16},
-			{Name: "Int32", BitSize: 32},
-			{Name: "Int64", BitSize: 64},
-		},
 	}
 
 	supportFiles := []struct {
 		path string
 		tmpl *template.Template
 	}{
-		{"pgxdata_attribute.go", templates.Lookup("attribute")},
 		{"pgxdata_db.go", templates.Lookup("db")},
 	}
 	for _, f := range supportFiles {
