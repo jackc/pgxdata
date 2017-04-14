@@ -27,7 +27,8 @@ end
 
 desc "Run go tests"
 task :test => FileList["templates.go", "test/data/db.go"] do
-  sh "go test ./..."
+  pkgs = `go list ./...`.lines.map(&:chomp).grep_v /vendor/
+  sh "go test #{pkgs.join(' ')}"
 end
 
 desc "Build pgxdata"
