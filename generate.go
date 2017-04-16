@@ -83,6 +83,11 @@ type ColumnConfig struct {
 	FieldName  string `toml:"field_name"`
 }
 
+type UniqueKey struct {
+	Name    string
+	Columns []*Column
+}
+
 type Table struct {
 	TableName             string         `toml:"table_name"`
 	StructName            string         `toml:"struct_name"`
@@ -90,6 +95,7 @@ type Table struct {
 	ColumnConfigs         []ColumnConfig `toml:"columns"`
 	Columns               []Column
 	PrimaryKeyColumns     []*Column
+	CandidateKeys         []UniqueKey
 }
 
 func generateCmd(cmd *cobra.Command, args []string) {
@@ -253,6 +259,76 @@ func inspectDatabase(db Queryer, tables []Table) error {
 	}
 
 	return nil
+}
+
+const selectorInferenceQuery = /* language=PostgreSQL */ `
+SELECT tc.constraint_type, tc.constraint_name, c.column_name
+FROM
+  information_schema.table_constraints tc
+  INNER JOIN information_schema.constraint_column_usage ccu
+    ON
+      ccu.table_schema = tc.table_schema AND
+      ccu.table_name = tc.table_name AND
+      ccu.constraint_name = tc.constraint_name
+  INNER JOIN information_schema.columns c
+    ON
+      c.table_schema = tc.table_schema AND
+      c.table_name = tc.table_name AND
+      c.column_name = ccu.column_name
+WHERE "tc"."table_schema" = $1 AND
+      tc.table_name = $2 AND
+      tc.constraint_type IN ('PRIMARY KEY', 'UNIQUE')
+ORDER BY tc.constraint_type, tc.constraint_name, c.ordinal_position ASC;
+`
+
+type candidateKeyType string
+
+const (
+	unique     candidateKeyType = "UNIQUE"
+	primaryKey candidateKeyType = "PRIMARY KEY"
+)
+
+type candidateKeyConstraint struct {
+	Name    string
+	Columns []string
+}
+
+type keyConstraints struct {
+	Primary *candidateKeyConstraint
+	Unique  []*candidateKeyConstraint
+}
+
+func inferKeyConstraints(db Queryer, schema string, table string) (*keyConstraints, error) {
+	rows, err := db.Query(selectorInferenceQuery, schema, table)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	keySet := &keyConstraints{}
+
+	var ctype, cname, columnName string
+	var currentUnique *candidateKeyConstraint
+
+	for rows.Next() {
+		rows.Scan(&ctype, &cname, &columnName)
+		switch ctype {
+		case primaryKey:
+			if keySet.Primary == nil {
+				keySet.Primary = &candidateKeyConstraint{cname, []string{columnName}}
+			} else {
+				keySet.Primary.Columns = append(keySet.Primary.Columns, columnName)
+			}
+		case unique:
+			if currentUnique == nil || currentUnique.Name != cname {
+				currentUnique = &candidateKeyConstraint{cname, []string{columnName}}
+				keySet.Unique = append(keySet.Unique, currentUnique)
+			} else {
+				currentUnique.Columns = append(currentUnique.Columns, columnName)
+			}
+		}
+	}
+	return keySet, nil
 }
 
 // splitSchemaFromTableName splits off the name from the table name. if the name is not of the form "<schema>.<table>"
