@@ -89,13 +89,12 @@ type UniqueKey struct {
 }
 
 type Table struct {
-	TableName             string         `toml:"table_name"`
-	StructName            string         `toml:"struct_name"`
-	PrimaryKeyColumnNames []string       `toml:"primary_key"`
-	ColumnConfigs         []ColumnConfig `toml:"columns"`
-	Columns               []Column
-	PrimaryKeyColumns     []*Column
-	CandidateKeys         []UniqueKey
+	TableName         string         `toml:"table_name"`
+	StructName        string         `toml:"struct_name"`
+	ColumnConfigs     []ColumnConfig `toml:"columns"`
+	Columns           []Column
+	PrimaryKeyColumns []*Column
+	CandidateKeys     []UniqueKey
 }
 
 func generateCmd(cmd *cobra.Command, args []string) {
@@ -192,7 +191,7 @@ func writeTableCrud(w io.Writer, templates *template.Template, pkgName string, t
 
 func inspectDatabase(db Queryer, tables []Table) error {
 	for i := range tables {
-		schemaName, tableName,err  := splitSchemaFromTableName(tables[i].TableName)
+		schemaName, tableName, err := splitSchemaFromTableName(tables[i].TableName)
 		if err != nil {
 			return err
 		}
@@ -222,22 +221,20 @@ func inspectDatabase(db Queryer, tables []Table) error {
 		}
 
 		tables[i].Columns = columns
-
-		if len(tables[i].PrimaryKeyColumnNames) == 0 {
-			tables[i].PrimaryKeyColumnNames = []string{"id"}
+		candidateKeys, err := inferKeyConstraints(db, schemaName, tableName)
+		if err != nil {
+			return err
 		}
 
-		for _, columnName := range tables[i].PrimaryKeyColumnNames {
-			var found bool
+		if candidateKeys.Primary == nil {
+			return fmt.Errorf("table %s has no primary key", tables[i].TableName)
+		}
+
+		for _, columnName := range candidateKeys.Primary.Columns {
 			for j := range tables[i].Columns {
 				if tables[i].Columns[j].ColumnName == columnName {
 					tables[i].PrimaryKeyColumns = append(tables[i].PrimaryKeyColumns, &tables[i].Columns[j])
-					found = true
-					break
 				}
-			}
-			if !found {
-				return fmt.Errorf("table %s primary_key column %s not found", tables[i].TableName, columnName)
 			}
 		}
 
@@ -312,7 +309,7 @@ func inferKeyConstraints(db Queryer, schema string, table string) (*keyConstrain
 
 	for rows.Next() {
 		rows.Scan(&ctype, &cname, &columnName)
-		switch ctype {
+		switch candidateKeyType(ctype) {
 		case primaryKey:
 			if keySet.Primary == nil {
 				keySet.Primary = &candidateKeyConstraint{cname, []string{columnName}}
