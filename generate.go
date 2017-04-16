@@ -186,7 +186,15 @@ func writeTableCrud(w io.Writer, templates *template.Template, pkgName string, t
 
 func inspectDatabase(db Queryer, tables []Table) error {
 	for i := range tables {
-		rows, err := db.Query(`select column_name, data_type, ordinal_position from information_schema.columns where table_name=$1`, tables[i].TableName)
+		schemaName, tableName,err  := splitSchemaFromTableName(tables[i].TableName)
+		if err != nil {
+			return err
+		}
+
+		rows, err := db.Query(`
+			SELECT  column_name, data_type, ordinal_position
+			FROM information_schema.columns
+			WHERE table_schema=$1 AND table_name=$2`, schemaName, tableName)
 		if err != nil {
 			return err
 		}
@@ -245,6 +253,20 @@ func inspectDatabase(db Queryer, tables []Table) error {
 	}
 
 	return nil
+}
+
+// splitSchemaFromTableName splits off the name from the table name. if the name is not of the form "<schema>.<table>"
+// it will return public. More than 2 periods in a table identifier are invalid.
+func splitSchemaFromTableName(tableName string) (schema string, table string, err error) {
+	schema = "public"
+	table = tableName
+	if parts := strings.Split(tableName, "."); len(parts) > 2 {
+		err = fmt.Errorf("table name %s contain more than one period", tableName)
+	} else if len(parts) == 2 {
+		schema = parts[0]
+		table = parts[1]
+	}
+	return
 }
 
 func pgCaseToGoPublicCase(pg string) string {
