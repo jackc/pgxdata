@@ -296,7 +296,7 @@ func pgTypeToGoBoxType(pg string) string {
 	if t, ok := pgToBoxTypeMap[pg]; ok {
 		return t
 	} else {
-		return "String"
+		return "pgtype.Varchar"
 	}
 }
 
