@@ -17,7 +17,7 @@ file "templates.go" => ["templates.go.erb", *FileList["templates/*"]] do |t|
 end
 
 file "test/data/db.go" => ["build/pgxdata", "test/data/config.toml"] do
-  sh "cd test/data && ../../build/pgxdata generate"
+  sh "cd test/data && ../../build/pgxdata generate && gofmt -w *.go"
 end
 
 file "build/pgxdata" => FileList["*.go"] do
