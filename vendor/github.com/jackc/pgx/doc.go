@@ -1,9 +1,9 @@
 // Package pgx is a PostgreSQL database driver.
 /*
-pgx provides lower level access to PostgreSQL than the standard database/sql
+pgx provides lower level access to PostgreSQL than the standard database/sql.
 It remains as similar to the database/sql interface as possible while
 providing better speed and access to PostgreSQL specific features. Import
-github.com/jack/pgx/stdlib to use pgx as a database/sql compatible driver.
+github.com/jackc/pgx/stdlib to use pgx as a database/sql compatible driver.
 
 Query Interface
 
@@ -62,17 +62,15 @@ Use Exec to execute a query that does not return a result set.
 
 Connection Pool
 
-Connection pool usage is explicit and configurable. In pgx, a connection can
-be created and managed directly, or a connection pool with a configurable
-maximum connections can be used. Also, the connection pool offers an after
-connect hook that allows every connection to be automatically setup before
-being made available in the connection pool. This is especially useful to
-ensure all connections have the same prepared statements available or to
-change any other connection settings.
+Connection pool usage is explicit and configurable. In pgx, a connection can be
+created and managed directly, or a connection pool with a configurable maximum
+connections can be used. The connection pool offers an after connect hook that
+allows every connection to be automatically setup before being made available in
+the connection pool.
 
-It delegates Query, QueryRow, Exec, and Begin functions to an automatically
-checked out and released connection so you can avoid manually acquiring and
-releasing connections when you do not need that level of control.
+It delegates methods such as QueryRow to an automatically checked out and
+released connection so you can avoid manually acquiring and releasing
+connections when you do not need that level of control.
 
     var name string
     var weight int64
@@ -117,11 +115,11 @@ particular:
 
 Null Mapping
 
-pgx can map nulls in two ways. The first is Null* types that have a data field
-and a valid field. They work in a similar fashion to database/sql. The second
-is to use a pointer to a pointer.
+pgx can map nulls in two ways. The first is package pgtype provides types that
+have a data field and a status field. They work in a similar fashion to
+database/sql. The second is to use a pointer to a pointer.
 
-    var foo pgx.NullString
+    var foo pgtype.Varchar
     var bar *string
     err := conn.QueryRow("select foo, bar from widgets where id=$1", 42).Scan(&a, &b)
     if err != nil {
@@ -133,20 +131,15 @@ Array Mapping
 pgx maps between int16, int32, int64, float32, float64, and string Go slices
 and the equivalent PostgreSQL array type. Go slices of native types do not
 support nulls, so if a PostgreSQL array that contains a null is read into a
-native Go slice an error will occur.
-
-Hstore Mapping
-
-pgx includes an Hstore type and a NullHstore type. Hstore is simply a
-map[string]string and is preferred when the hstore contains no nulls. NullHstore
-follows the Null* pattern and supports null values.
+native Go slice an error will occur. The pgtype package includes many more
+array types for PostgreSQL types that do not directly map to native Go types.
 
 JSON and JSONB Mapping
 
 pgx includes built-in support to marshal and unmarshal between Go types and
 the PostgreSQL JSON and JSONB.
 
-Inet and Cidr Mapping
+Inet and CIDR Mapping
 
 pgx encodes from net.IPNet to and from inet and cidr PostgreSQL types. In
 addition, as a convenience pgx will encode from a net.IP; it will assume a /32
@@ -196,23 +189,23 @@ can create a transaction with a specified isolation level.
 
 Copy Protocol
 
-Use CopyTo to efficiently insert multiple rows at a time using the PostgreSQL
-copy protocol. CopyTo accepts a CopyToSource interface. If the data is already
-in a [][]interface{} use CopyToRows to wrap it in a CopyToSource interface. Or
-implement CopyToSource to avoid buffering the entire data set in memory.
+Use CopyFrom to efficiently insert multiple rows at a time using the PostgreSQL
+copy protocol. CopyFrom accepts a CopyFromSource interface. If the data is already
+in a [][]interface{} use CopyFromRows to wrap it in a CopyFromSource interface. Or
+implement CopyFromSource to avoid buffering the entire data set in memory.
 
     rows := [][]interface{}{
         {"John", "Smith", int32(36)},
         {"Jane", "Doe", int32(29)},
     }
 
-    copyCount, err := conn.CopyTo(
-        "people",
+    copyCount, err := conn.CopyFrom(
+        pgx.Identifier{"people"},
         []string{"first_name", "last_name", "age"},
-        pgx.CopyToRows(rows),
+        pgx.CopyFromRows(rows),
     )
 
-CopyTo can be faster than an insert with as few as 5 rows.
+CopyFrom can be faster than an insert with as few as 5 rows.
 
 Listen and Notify
 
@@ -239,7 +232,8 @@ connection.
 Logging
 
 pgx defines a simple logger interface. Connections optionally accept a logger
-that satisfies this interface. Set LogLevel to control logging
-verbosity.
+that satisfies this interface. Set LogLevel to control logging verbosity.
+Adapters for github.com/inconshreveable/log15, github.com/sirupsen/logrus, and
+the testing log are provided in the log directory.
 */
 package pgx

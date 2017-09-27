@@ -1,12 +1,12 @@
 {
 	"ImportPath": "github.com/jackc/pgxdata",
-	"GoVersion": "go1.6",
+	"GoVersion": "go1.9",
 	"GodepVersion": "v79",
 	"Deps": [
 		{
 			"ImportPath": "github.com/BurntSushi/toml",
-			"Comment": "v0.1.0-21-g056c9bc",
-			"Rev": "056c9bc7be7190eaa7715723883caffa5f8fa3e4"
+			"Comment": "v0.3.0-7-ga368813",
+			"Rev": "a368813c5e648fee92e5f6c30e3944ff9d5e8895"
 		},
 		{
 			"ImportPath": "github.com/inconshreveable/mousetrap",
@@ -14,36 +14,47 @@
 		},
 		{
 			"ImportPath": "github.com/jackc/pgx",
-			"Comment": "v2.9.0-290-ga45b1e0",
-			"Rev": "a45b1e05a4ac50476addd78284a2e210b6d15a17"
-		},
-		{
-			"ImportPath": "github.com/spf13/cobra",
-			"Rev": "65a708cee0a4424f4e353d031ce440643e312f92"
-		},
-		{
-			"ImportPath": "github.com/spf13/pflag",
-			"Rev": "7f60f83a2c81bc3c3c0d5297f61ddfa68da9d3b7"
+			"Comment": "v3.0.1-51-ge7924c7",
+			"Rev": "e7924c75904a3345ba87508146f4074ae7ee9c60"
 		},
 		{
 			"ImportPath": "github.com/jackc/pgx/chunkreader",
-			"Comment": "v2.9.0-290-ga45b1e0",
-			"Rev": "a45b1e05a4ac50476addd78284a2e210b6d15a17"
+			"Comment": "v3.0.1-51-ge7924c7",
+			"Rev": "e7924c75904a3345ba87508146f4074ae7ee9c60"
 		},
 		{
 			"ImportPath": "github.com/jackc/pgx/internal/sanitize",
-			"Comment": "v2.9.0-290-ga45b1e0",
-			"Rev": "a45b1e05a4ac50476addd78284a2e210b6d15a17"
-		},
-		{
-			"ImportPath": "github.com/jackc/pgx/pgtype",
-			"Comment": "v2.9.0-290-ga45b1e0",
-			"Rev": "a45b1e05a4ac50476addd78284a2e210b6d15a17"
+			"Comment": "v3.0.1-51-ge7924c7",
+			"Rev": "e7924c75904a3345ba87508146f4074ae7ee9c60"
 		},
 		{
 			"ImportPath": "github.com/jackc/pgx/pgio",
-			"Comment": "v2.9.0-290-ga45b1e0",
-			"Rev": "a45b1e05a4ac50476addd78284a2e210b6d15a17"
+			"Comment": "v3.0.1-51-ge7924c7",
+			"Rev": "e7924c75904a3345ba87508146f4074ae7ee9c60"
+		},
+		{
+			"ImportPath": "github.com/jackc/pgx/pgproto3",
+			"Comment": "v3.0.1-51-ge7924c7",
+			"Rev": "e7924c75904a3345ba87508146f4074ae7ee9c60"
+		},
+		{
+			"ImportPath": "github.com/jackc/pgx/pgtype",
+			"Comment": "v3.0.1-51-ge7924c7",
+			"Rev": "e7924c75904a3345ba87508146f4074ae7ee9c60"
+		},
+		{
+			"ImportPath": "github.com/pkg/errors",
+			"Comment": "v0.7.1",
+			"Rev": "17b591df37844cde689f4d5813e5cea0927d8dd2"
+		},
+		{
+			"ImportPath": "github.com/spf13/cobra",
+			"Rev": "b78744579491c1ceeaaa3b40205e56b0591b93a3"
+		},
+		{
+			"ImportPath": "github.com/spf13/pflag",
+			"Comment": "v1.0.0-3-g7aff26d",
+			"Rev": "7aff26db30c1be810f9de5038ec5ef96ac41fd7c"
 		}
 	]
 }
