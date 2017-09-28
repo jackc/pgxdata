@@ -83,13 +83,18 @@ type ColumnConfig struct {
 	FieldName  string `toml:"field_name"`
 }
 
+type UniqueKey struct {
+	Name    string
+	Columns []*Column
+}
+
 type Table struct {
-	TableName             string         `toml:"table_name"`
-	StructName            string         `toml:"struct_name"`
-	PrimaryKeyColumnNames []string       `toml:"primary_key"`
-	ColumnConfigs         []ColumnConfig `toml:"columns"`
-	Columns               []Column
-	PrimaryKeyColumns     []*Column
+	TableName         string         `toml:"table_name"`
+	StructName        string         `toml:"struct_name"`
+	ColumnConfigs     []ColumnConfig `toml:"columns"`
+	Columns           []Column
+	PrimaryKeyColumns []*Column
+	CandidateKeys     []UniqueKey
 }
 
 func generateCmd(cmd *cobra.Command, args []string) {
@@ -186,7 +191,15 @@ func writeTableCrud(w io.Writer, templates *template.Template, pkgName string, t
 
 func inspectDatabase(db Queryer, tables []Table) error {
 	for i := range tables {
-		rows, err := db.Query(`select column_name, data_type, ordinal_position from information_schema.columns where table_name=$1`, tables[i].TableName)
+		schemaName, tableName, err := splitSchemaFromTableName(tables[i].TableName)
+		if err != nil {
+			return err
+		}
+
+		rows, err := db.Query(`
+			SELECT  column_name, data_type, ordinal_position
+			FROM information_schema.columns
+			WHERE table_schema=$1 AND table_name=$2`, schemaName, tableName)
 		if err != nil {
 			return err
 		}
@@ -208,22 +221,20 @@ func inspectDatabase(db Queryer, tables []Table) error {
 		}
 
 		tables[i].Columns = columns
-
-		if len(tables[i].PrimaryKeyColumnNames) == 0 {
-			tables[i].PrimaryKeyColumnNames = []string{"id"}
+		candidateKeys, err := inferKeyConstraints(db, schemaName, tableName)
+		if err != nil {
+			return err
 		}
 
-		for _, columnName := range tables[i].PrimaryKeyColumnNames {
-			var found bool
+		if candidateKeys.Primary == nil {
+			return fmt.Errorf("table %s has no primary key", tables[i].TableName)
+		}
+
+		for _, columnName := range candidateKeys.Primary.Columns {
 			for j := range tables[i].Columns {
 				if tables[i].Columns[j].ColumnName == columnName {
 					tables[i].PrimaryKeyColumns = append(tables[i].PrimaryKeyColumns, &tables[i].Columns[j])
-					found = true
-					break
 				}
-			}
-			if !found {
-				return fmt.Errorf("table %s primary_key column %s not found", tables[i].TableName, columnName)
 			}
 		}
 
@@ -245,6 +256,90 @@ func inspectDatabase(db Queryer, tables []Table) error {
 	}
 
 	return nil
+}
+
+const selectorInferenceQuery = /* language=PostgreSQL */ `
+SELECT tc.constraint_type, tc.constraint_name, c.column_name
+FROM
+  information_schema.table_constraints tc
+  INNER JOIN information_schema.constraint_column_usage ccu
+    ON
+      ccu.table_schema = tc.table_schema AND
+      ccu.table_name = tc.table_name AND
+      ccu.constraint_name = tc.constraint_name
+  INNER JOIN information_schema.columns c
+    ON
+      c.table_schema = tc.table_schema AND
+      c.table_name = tc.table_name AND
+      c.column_name = ccu.column_name
+WHERE "tc"."table_schema" = $1 AND
+      tc.table_name = $2 AND
+      tc.constraint_type IN ('PRIMARY KEY', 'UNIQUE')
+ORDER BY tc.constraint_type, tc.constraint_name, c.ordinal_position ASC;
+`
+
+type candidateKeyType string
+
+const (
+	unique     candidateKeyType = "UNIQUE"
+	primaryKey candidateKeyType = "PRIMARY KEY"
+)
+
+type candidateKeyConstraint struct {
+	Name    string
+	Columns []string
+}
+
+type keyConstraints struct {
+	Primary *candidateKeyConstraint
+	Unique  []*candidateKeyConstraint
+}
+
+func inferKeyConstraints(db Queryer, schema string, table string) (*keyConstraints, error) {
+	rows, err := db.Query(selectorInferenceQuery, schema, table)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	keySet := &keyConstraints{}
+
+	var ctype, cname, columnName string
+	var currentUnique *candidateKeyConstraint
+
+	for rows.Next() {
+		rows.Scan(&ctype, &cname, &columnName)
+		switch candidateKeyType(ctype) {
+		case primaryKey:
+			if keySet.Primary == nil {
+				keySet.Primary = &candidateKeyConstraint{cname, []string{columnName}}
+			} else {
+				keySet.Primary.Columns = append(keySet.Primary.Columns, columnName)
+			}
+		case unique:
+			if currentUnique == nil || currentUnique.Name != cname {
+				currentUnique = &candidateKeyConstraint{cname, []string{columnName}}
+				keySet.Unique = append(keySet.Unique, currentUnique)
+			} else {
+				currentUnique.Columns = append(currentUnique.Columns, columnName)
+			}
+		}
+	}
+	return keySet, nil
+}
+
+// splitSchemaFromTableName splits off the name from the table name. if the name is not of the form "<schema>.<table>"
+// it will return public. More than 2 periods in a table identifier are invalid.
+func splitSchemaFromTableName(tableName string) (schema string, table string, err error) {
+	schema = "public"
+	table = tableName
+	if parts := strings.Split(tableName, "."); len(parts) > 2 {
+		err = fmt.Errorf("table name %s contain more than one period", tableName)
+	} else if len(parts) == 2 {
+		schema = parts[0]
+		table = parts[1]
+	}
+	return
 }
 
 func pgCaseToGoPublicCase(pg string) string {
