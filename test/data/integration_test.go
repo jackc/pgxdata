@@ -1,15 +1,16 @@
 package data_test
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
 	"testing"
 
-	"github.com/jackc/pgx"
+	pgxpool "github.com/jackc/pgx/v4/pool"
 )
 
-var pool *pgx.ConnPool
+var pool *pgxpool.Pool
 
 func TestMain(m *testing.M) {
 	flag.Parse()
@@ -24,35 +25,12 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func createConnPool() (*pgx.ConnPool, error) {
-	var config pgx.ConnPoolConfig
-	var err error
-	config.ConnConfig, err = pgx.ParseEnvLibpq()
-	if err != nil {
-		return nil, err
-	}
-
-	if config.Host == "" {
-		config.Host = "localhost"
-	}
-
-	if config.User == "" {
-		config.User = os.Getenv("USER")
-	}
-
-	if config.Database == "" {
-		config.Database = "pgxdata"
-	}
-
-	config.TLSConfig = nil
-	config.UseFallbackTLS = false
-	config.MaxConnections = 10
-
-	return pgx.NewConnPool(config)
+func createConnPool() (*pgxpool.Pool, error) {
+	return pgxpool.Connect(context.Background(), "")
 }
 
-func begin(t *testing.T) *pgx.Tx {
-	tx, err := pool.Begin()
+func begin(t *testing.T) *pgxpool.Tx {
+	tx, err := pool.Begin(context.Background(), nil)
 	if err != nil {
 		t.Fatal(t)
 	}

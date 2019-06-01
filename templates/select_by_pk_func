@@ -4,11 +4,12 @@ from "{{.TableName}}"
 where {{ range $i, $column := .PrimaryKeyColumns}}{{if $i}} and {{end}}"{{$column.ColumnName}}"={{pkPlaceholder $i}}{{end}}`
 
 func Select{{.StructName}}ByPK(
+  ctx context.Context,
   db Queryer{{range .PrimaryKeyColumns}},
   {{.VarName}} {{.GoType}}{{end}},
 ) (*{{.StructName}}, error) {
   var row {{.StructName}}
-  err := prepareQueryRow(db, "pgxdataSelect{{.StructName}}ByPK", select{{.StructName}}ByPKSQL{{range .PrimaryKeyColumns}}, {{.VarName}}{{end}}).Scan(
+  err := prepareQueryRow(ctx, db, "pgxdataSelect{{.StructName}}ByPK", select{{.StructName}}ByPKSQL{{range .PrimaryKeyColumns}}, {{.VarName}}{{end}}).Scan(
 {{range .Columns}}&row.{{.FieldName}},
     {{end}})
   if err == pgx.ErrNoRows {

@@ -6,8 +6,10 @@ import (
 	"errors"
 	"hash/fnv"
 	"io"
+	"context"
 
-	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgconn"
 )
 
 const PGXDATA_VERSION = "{{.Version}}"
@@ -15,48 +17,48 @@ const PGXDATA_VERSION = "{{.Version}}"
 var ErrNotFound = errors.New("not found")
 
 type Queryer interface {
-	Query(sql string, args ...interface{}) (*pgx.Rows, error)
-	QueryRow(sql string, args ...interface{}) *pgx.Row
-	Exec(sql string, arguments ...interface{}) (pgx.CommandTag, error)
+	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
+	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
 }
 
 type preparer interface {
-	Prepare(name, sql string) (*pgx.PreparedStatement, error)
-	Deallocate(name string) error
+	Prepare(ctx context.Context, name, sql string) (*pgx.PreparedStatement, error)
+	Deallocate(ctx context.Context, name string) error
 }
 
-func prepareQuery(db Queryer, name, sql string, args ...interface{}) (*pgx.Rows, error) {
+func prepareQuery(ctx context.Context, db Queryer, name, sql string, args ...interface{}) (pgx.Rows, error) {
 	if preparer, ok := db.(preparer); ok {
-		if _, err := preparer.Prepare(name, sql); err != nil {
+		if _, err := preparer.Prepare(ctx, name, sql); err != nil {
 			return nil, err
 		}
 		sql = name
 	}
 
-	return db.Query(sql, args...)
+	return db.Query(ctx, sql, args...)
 }
 
-func prepareQueryRow(db Queryer, name, sql string, args ...interface{}) *pgx.Row {
+func prepareQueryRow(ctx context.Context, db Queryer, name, sql string, args ...interface{}) pgx.Row {
 	if preparer, ok := db.(preparer); ok {
 		// QueryRow doesn't return an error, the error is encoded in the pgx.Row.
 		// Since that is private, Ignore the error from Prepare and run the query
 		// without the prepared statement. It should fail with the same error.
-		if _, err := preparer.Prepare(name, sql); err == nil {
+		if _, err := preparer.Prepare(ctx, name, sql); err == nil {
 			sql = name
 		}
 	}
-	return db.QueryRow(sql, args...)
+	return db.QueryRow(ctx, sql, args...)
 }
 
-func prepareExec(db Queryer, name, sql string, args ...interface{}) (pgx.CommandTag, error) {
+func prepareExec(ctx context.Context, db Queryer, name, sql string, args ...interface{}) (pgconn.CommandTag, error) {
 	if preparer, ok := db.(preparer); ok {
-		if _, err := preparer.Prepare(name, sql); err != nil {
-			return pgx.CommandTag(""), err
+		if _, err := preparer.Prepare(ctx, name, sql); err != nil {
+			return nil, err
 		}
 		sql = name
 	}
 
-	return db.Exec(sql, args...)
+	return db.Exec(ctx, sql, args...)
 }
 
 func preparedName(baseName, sql string) string {

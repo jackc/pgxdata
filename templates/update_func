@@ -1,4 +1,4 @@
-func Update{{.StructName}}(db Queryer{{range .PrimaryKeyColumns}},
+func Update{{.StructName}}(ctx context.Context, db Queryer{{range .PrimaryKeyColumns}},
   {{.VarName}} {{.GoType}}{{end}},
   row *{{.StructName}},
 ) error {
@@ -18,7 +18,7 @@ func Update{{.StructName}}(db Queryer{{range .PrimaryKeyColumns}},
 
   psName := preparedName("pgxdataUpdate{{.StructName}}", sql)
 
-  commandTag, err := prepareExec(db, psName, sql, args...)
+  commandTag, err := prepareExec(ctx, db, psName, sql, args...)
   if err != nil {
     return err
   }

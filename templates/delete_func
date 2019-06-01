@@ -1,11 +1,11 @@
-func Delete{{.StructName}}(db Queryer{{range .PrimaryKeyColumns}},
+func Delete{{.StructName}}(ctx context.Context, db Queryer{{range .PrimaryKeyColumns}},
   {{.VarName}} {{.GoType}}{{end}},
 ) error {
   args := pgx.QueryArgs(make([]interface{}, 0, {{len .PrimaryKeyColumns}}))
 
   sql := `delete from "{{.TableName}}" where ` {{ range $i, $column := .PrimaryKeyColumns}} + `{{if $i}} and {{end}}"{{$column.ColumnName}}"=` + args.Append({{$column.VarName}}){{end}}
 
-  commandTag, err := prepareExec(db, "pgxdataDelete{{.StructName}}", sql, args...)
+  commandTag, err := prepareExec(ctx, db, "pgxdataDelete{{.StructName}}", sql, args...)
   if err != nil {
     return err
   }

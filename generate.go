@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -10,7 +11,8 @@ import (
 	"unicode"
 
 	"github.com/BurntSushi/toml"
-	"github.com/jackc/pgx"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v4"
 	"github.com/spf13/cobra"
 )
 
@@ -31,25 +33,25 @@ type initData struct {
 }
 
 var pgToBoxTypeMap = map[string]string{
-	"bigint":            "pgtype.Int8",
-	"integer":           "pgtype.Int4",
-	"smallint":          "pgtype.Int2",
-	"character varying": "pgtype.Varchar",
-	"text":              "pgtype.Text",
-	"date":              "pgtype.Date",
+	"bigint":                   "pgtype.Int8",
+	"integer":                  "pgtype.Int4",
+	"smallint":                 "pgtype.Int2",
+	"character varying":        "pgtype.Varchar",
+	"text":                     "pgtype.Text",
+	"date":                     "pgtype.Date",
 	"timestamp with time zone": "pgtype.Timestamptz",
-	"inet":  "pgtype.Inet",
-	"cidr":  "pgtype.Cidr",
-	"bytea": "pgtype.Bytea",
+	"inet":                     "pgtype.Inet",
+	"cidr":                     "pgtype.Cidr",
+	"bytea":                    "pgtype.Bytea",
 }
 
 var pgToGoTypeMap = map[string]string{
-	"bigint":            "int64",
-	"integer":           "int32",
-	"smallint":          "int16",
-	"character varying": "string",
-	"text":              "string",
-	"date":              "time.Time",
+	"bigint":                   "int64",
+	"integer":                  "int32",
+	"smallint":                 "int16",
+	"character varying":        "string",
+	"text":                     "string",
+	"date":                     "time.Time",
 	"timestamp with time zone": "time.Time",
 	"bytea":                    "[]byte",
 }
@@ -61,9 +63,8 @@ var acronyms = map[string]bool{
 }
 
 type Config struct {
-	Package  string
-	Database pgx.ConnConfig
-	Tables   []Table
+	Package string
+	Tables  []Table
 }
 
 type Column struct {
@@ -99,20 +100,13 @@ func generateCmd(cmd *cobra.Command, args []string) {
 	}
 
 	var c Config
-	var err error
-	c.Database, err = pgx.ParseEnvLibpq()
+	_, err := toml.DecodeFile("config.toml", &c)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	_, err = toml.DecodeFile("config.toml", &c)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-
-	conn, err := pgx.Connect(c.Database)
+	conn, err := pgx.Connect(context.Background(), "")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -163,9 +157,9 @@ func generateCmd(cmd *cobra.Command, args []string) {
 }
 
 type Queryer interface {
-	Query(sql string, args ...interface{}) (*pgx.Rows, error)
-	QueryRow(sql string, args ...interface{}) *pgx.Row
-	Exec(sql string, arguments ...interface{}) (pgx.CommandTag, error)
+	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
+	Exec(ctx context.Context, sql string, arguments ...interface{}) (pgconn.CommandTag, error)
 }
 
 func writeTableCrud(w io.Writer, templates *template.Template, pkgName string, table Table) error {
@@ -186,7 +180,7 @@ func writeTableCrud(w io.Writer, templates *template.Template, pkgName string, t
 
 func inspectDatabase(db Queryer, tables []Table) error {
 	for i := range tables {
-		rows, err := db.Query(`select column_name, data_type, ordinal_position from information_schema.columns where table_name=$1`, tables[i].TableName)
+		rows, err := db.Query(context.Background(), `select column_name, data_type, ordinal_position from information_schema.columns where table_name=$1`, tables[i].TableName)
 		if err != nil {
 			return err
 		}

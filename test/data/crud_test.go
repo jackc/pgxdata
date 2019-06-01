@@ -2,9 +2,10 @@ package data_test
 
 import (
 	"bytes"
+	"context"
 	"testing"
 
-	"github.com/jackc/pgx/pgtype"
+	"github.com/jackc/pgtype"
 	"github.com/jackc/pgxdata/test/data"
 )
 
@@ -12,9 +13,9 @@ func TestCount(t *testing.T) {
 	t.Parallel()
 
 	tx := begin(t)
-	defer tx.Rollback()
+	defer tx.Rollback(context.Background())
 
-	customerCount, err := data.CountCustomer(tx)
+	customerCount, err := data.CountCustomer(context.Background(), tx)
 	if err != nil {
 		t.Fatalf("CountCustomer unexpectedly failed: %v", err)
 	}
@@ -22,7 +23,7 @@ func TestCount(t *testing.T) {
 		t.Fatalf("Expected CountCustomer to return %v, but is was %v", 0, customerCount)
 	}
 
-	err = data.InsertCustomer(tx, &data.Customer{
+	err = data.InsertCustomer(context.Background(), tx, &data.Customer{
 		FirstName: pgtype.Varchar{String: "John", Status: pgtype.Present},
 		LastName:  pgtype.Varchar{String: "Smith", Status: pgtype.Present},
 		BirthDate: pgtype.Date{Status: pgtype.Null},
@@ -31,7 +32,7 @@ func TestCount(t *testing.T) {
 		t.Fatalf("InsertCustomer unexpectedly failed: %v", err)
 	}
 
-	customerCount, err = data.CountCustomer(tx)
+	customerCount, err = data.CountCustomer(context.Background(), tx)
 	if err != nil {
 		t.Fatalf("CountCustomer unexpectedly failed: %v", err)
 	}
@@ -44,9 +45,9 @@ func TestSelectAll(t *testing.T) {
 	t.Parallel()
 
 	tx := begin(t)
-	defer tx.Rollback()
+	defer tx.Rollback(context.Background())
 
-	customers, err := data.SelectAllCustomer(tx)
+	customers, err := data.SelectAllCustomer(context.Background(), tx)
 	if err != nil {
 		t.Fatalf("SelectAllCustomer unexpectedly failed: %v", err)
 	}
@@ -60,12 +61,12 @@ func TestSelectAll(t *testing.T) {
 		BirthDate: pgtype.Date{Status: pgtype.Null},
 	}
 
-	err = data.InsertCustomer(tx, &insertedRow)
+	err = data.InsertCustomer(context.Background(), tx, &insertedRow)
 	if err != nil {
 		t.Fatalf("InsertCustomer unexpectedly failed: %v", err)
 	}
 
-	customers, err = data.SelectAllCustomer(tx)
+	customers, err = data.SelectAllCustomer(context.Background(), tx)
 	if err != nil {
 		t.Fatalf("SelectAllCustomer unexpectedly failed: %v", err)
 	}
@@ -85,9 +86,9 @@ func TestSelectByPK(t *testing.T) {
 	t.Parallel()
 
 	tx := begin(t)
-	defer tx.Rollback()
+	defer tx.Rollback(context.Background())
 
-	customer, err := data.SelectCustomerByPK(tx, -1)
+	customer, err := data.SelectCustomerByPK(context.Background(), tx, -1)
 	if err != data.ErrNotFound {
 		t.Fatalf("Expected SelectCustomerByPK to return err data.ErrNotFound but it was: %v", err)
 	}
@@ -98,12 +99,12 @@ func TestSelectByPK(t *testing.T) {
 		BirthDate: pgtype.Date{Status: pgtype.Null},
 	}
 
-	err = data.InsertCustomer(tx, &insertedRow)
+	err = data.InsertCustomer(context.Background(), tx, &insertedRow)
 	if err != nil {
 		t.Fatalf("InsertCustomer unexpectedly failed: %v", err)
 	}
 
-	customer, err = data.SelectCustomerByPK(tx, insertedRow.ID.Int)
+	customer, err = data.SelectCustomerByPK(context.Background(), tx, insertedRow.ID.Int)
 	if err != nil {
 		t.Fatalf("SelectCustomerByPK unexpectedly failed: %v", err)
 	}
@@ -120,9 +121,9 @@ func TestSelectByPKWithInt64PK(t *testing.T) {
 	t.Parallel()
 
 	tx := begin(t)
-	defer tx.Rollback()
+	defer tx.Rollback(context.Background())
 
-	widget, err := data.SelectWidgetByPK(tx, -1)
+	widget, err := data.SelectWidgetByPK(context.Background(), tx, -1)
 	if err != data.ErrNotFound {
 		t.Fatalf("Expected SelectWidgetByPK to return err data.ErrNotFound but it was: %v", err)
 	}
@@ -132,12 +133,12 @@ func TestSelectByPKWithInt64PK(t *testing.T) {
 		Weight: pgtype.Int2{Int: 20, Status: pgtype.Present},
 	}
 
-	err = data.InsertWidget(tx, &insertedRow)
+	err = data.InsertWidget(context.Background(), tx, &insertedRow)
 	if err != nil {
 		t.Fatalf("InsertWidget unexpectedly failed: %v", err)
 	}
 
-	widget, err = data.SelectWidgetByPK(tx, insertedRow.ID.Int)
+	widget, err = data.SelectWidgetByPK(context.Background(), tx, insertedRow.ID.Int)
 	if err != nil {
 		t.Fatalf("SelectWidgetByPK unexpectedly failed: %v", err)
 	}
@@ -154,9 +155,9 @@ func TestSelectByPKWithVarcharNotNamedIDAsPK(t *testing.T) {
 	t.Parallel()
 
 	tx := begin(t)
-	defer tx.Rollback()
+	defer tx.Rollback(context.Background())
 
-	part, err := data.SelectPartByPK(tx, "E100")
+	part, err := data.SelectPartByPK(context.Background(), tx, "E100")
 	if err != data.ErrNotFound {
 		t.Fatalf("Expected SelectPartByPK to return err data.ErrNotFound but it was: %v", err)
 	}
@@ -166,12 +167,12 @@ func TestSelectByPKWithVarcharNotNamedIDAsPK(t *testing.T) {
 		Description: pgtype.Text{String: "Engine 100", Status: pgtype.Present},
 	}
 
-	err = data.InsertPart(tx, &insertedRow)
+	err = data.InsertPart(context.Background(), tx, &insertedRow)
 	if err != nil {
 		t.Fatalf("InsertPart unexpectedly failed: %v", err)
 	}
 
-	part, err = data.SelectPartByPK(tx, insertedRow.Code.String)
+	part, err = data.SelectPartByPK(context.Background(), tx, insertedRow.Code.String)
 	if err != nil {
 		t.Fatalf("SelectPartByPK unexpectedly failed: %v", err)
 	}
@@ -188,9 +189,9 @@ func TestSelectByPKWithCompositePK(t *testing.T) {
 	t.Parallel()
 
 	tx := begin(t)
-	defer tx.Rollback()
+	defer tx.Rollback(context.Background())
 
-	semester, err := data.SelectSemesterByPK(tx, 1999, "Fall")
+	semester, err := data.SelectSemesterByPK(context.Background(), tx, 1999, "Fall")
 	if err != data.ErrNotFound {
 		t.Fatalf("Expected SelectSemesterByPK to return err data.ErrNotFound but it was: %v", err)
 	}
@@ -201,12 +202,12 @@ func TestSelectByPKWithCompositePK(t *testing.T) {
 		Description: pgtype.Text{String: "Last of the century", Status: pgtype.Present},
 	}
 
-	err = data.InsertSemester(tx, &insertedRow)
+	err = data.InsertSemester(context.Background(), tx, &insertedRow)
 	if err != nil {
 		t.Fatalf("InsertSemeseter unexpectedly failed: %v", err)
 	}
 
-	semester, err = data.SelectSemesterByPK(tx, insertedRow.Year.Int, insertedRow.Season.String)
+	semester, err = data.SelectSemesterByPK(context.Background(), tx, insertedRow.Year.Int, insertedRow.Season.String)
 	if err != nil {
 		t.Fatalf("SelectSemesterByPK unexpectedly failed: %v", err)
 	}
@@ -226,19 +227,19 @@ func TestInsert(t *testing.T) {
 	t.Parallel()
 
 	tx := begin(t)
-	defer tx.Rollback()
+	defer tx.Rollback(context.Background())
 
 	insertedRow := data.Customer{
 		FirstName: pgtype.Varchar{String: "John", Status: pgtype.Present},
 		LastName:  pgtype.Varchar{String: "Smith", Status: pgtype.Present},
 	}
 
-	err := data.InsertCustomer(tx, &insertedRow)
+	err := data.InsertCustomer(context.Background(), tx, &insertedRow)
 	if err != nil {
 		t.Fatalf("InsertCustomer unexpectedly failed: %v", err)
 	}
 
-	customer, err := data.SelectCustomerByPK(tx, insertedRow.ID.Int)
+	customer, err := data.SelectCustomerByPK(context.Background(), tx, insertedRow.ID.Int)
 	if err != nil {
 		t.Fatalf("SelectCustomerByPK unexpectedly failed: %v", err)
 	}
@@ -255,7 +256,7 @@ func TestInsertOverridingPK(t *testing.T) {
 	t.Parallel()
 
 	tx := begin(t)
-	defer tx.Rollback()
+	defer tx.Rollback(context.Background())
 
 	insertedRow := data.Customer{
 		ID:        pgtype.Int4{Int: -2, Status: pgtype.Present},
@@ -263,12 +264,12 @@ func TestInsertOverridingPK(t *testing.T) {
 		LastName:  pgtype.Varchar{String: "Smith", Status: pgtype.Present},
 	}
 
-	err := data.InsertCustomer(tx, &insertedRow)
+	err := data.InsertCustomer(context.Background(), tx, &insertedRow)
 	if err != nil {
 		t.Fatalf("InsertCustomer unexpectedly failed: %v", err)
 	}
 
-	customer, err := data.SelectCustomerByPK(tx, -2)
+	customer, err := data.SelectCustomerByPK(context.Background(), tx, -2)
 	if err != nil {
 		t.Fatalf("SelectCustomerByPK unexpectedly failed: %v", err)
 	}
@@ -285,19 +286,19 @@ func TestUpdate(t *testing.T) {
 	t.Parallel()
 
 	tx := begin(t)
-	defer tx.Rollback()
+	defer tx.Rollback(context.Background())
 
 	insertedRow := data.Customer{
 		FirstName: pgtype.Varchar{String: "John", Status: pgtype.Present},
 		LastName:  pgtype.Varchar{String: "Smith", Status: pgtype.Present},
 	}
 
-	err := data.InsertCustomer(tx, &insertedRow)
+	err := data.InsertCustomer(context.Background(), tx, &insertedRow)
 	if err != nil {
 		t.Fatalf("InsertCustomer unexpectedly failed: %v", err)
 	}
 
-	customer, err := data.SelectCustomerByPK(tx, insertedRow.ID.Int)
+	customer, err := data.SelectCustomerByPK(context.Background(), tx, insertedRow.ID.Int)
 	if err != nil {
 		t.Fatalf("SelectCustomerByPK unexpectedly failed: %v", err)
 	}
@@ -314,9 +315,9 @@ func TestUpdateWithCompositePK(t *testing.T) {
 	t.Parallel()
 
 	tx := begin(t)
-	defer tx.Rollback()
+	defer tx.Rollback(context.Background())
 
-	semester, err := data.SelectSemesterByPK(tx, 1999, "Fall")
+	semester, err := data.SelectSemesterByPK(context.Background(), tx, 1999, "Fall")
 	if err != data.ErrNotFound {
 		t.Fatalf("Expected SelectSemesterByPK to return err data.ErrNotFound but it was: %v", err)
 	}
@@ -327,7 +328,7 @@ func TestUpdateWithCompositePK(t *testing.T) {
 		Description: pgtype.Text{String: "Last of the century", Status: pgtype.Present},
 	}
 
-	err = data.InsertSemester(tx, &insertedRow)
+	err = data.InsertSemester(context.Background(), tx, &insertedRow)
 	if err != nil {
 		t.Fatalf("InsertSemeseter unexpectedly failed: %v", err)
 	}
@@ -336,13 +337,13 @@ func TestUpdateWithCompositePK(t *testing.T) {
 		Description: pgtype.Text{String: "New value", Status: pgtype.Present},
 	}
 
-	data.UpdateSemester(tx,
+	data.UpdateSemester(context.Background(), tx,
 		insertedRow.Year.Int,
 		insertedRow.Season.String,
 		updateAttrs,
 	)
 
-	semester, err = data.SelectSemesterByPK(tx, insertedRow.Year.Int, insertedRow.Season.String)
+	semester, err = data.SelectSemesterByPK(context.Background(), tx, insertedRow.Year.Int, insertedRow.Season.String)
 	if err != nil {
 		t.Fatalf("SelectSemesterByPK unexpectedly failed: %v", err)
 	}
@@ -356,29 +357,29 @@ func TestDelete(t *testing.T) {
 	t.Parallel()
 
 	tx := begin(t)
-	defer tx.Rollback()
+	defer tx.Rollback(context.Background())
 
 	insertedRow := data.Customer{
 		FirstName: pgtype.Varchar{String: "John", Status: pgtype.Present},
 		LastName:  pgtype.Varchar{String: "Smith", Status: pgtype.Present},
 	}
 
-	err := data.InsertCustomer(tx, &insertedRow)
+	err := data.InsertCustomer(context.Background(), tx, &insertedRow)
 	if err != nil {
 		t.Fatalf("InsertCustomer unexpectedly failed: %v", err)
 	}
 
-	_, err = data.SelectCustomerByPK(tx, insertedRow.ID.Int)
+	_, err = data.SelectCustomerByPK(context.Background(), tx, insertedRow.ID.Int)
 	if err != nil {
 		t.Fatalf("SelectCustomerByPK unexpectedly failed: %v", err)
 	}
 
-	err = data.DeleteCustomer(tx, insertedRow.ID.Int)
+	err = data.DeleteCustomer(context.Background(), tx, insertedRow.ID.Int)
 	if err != nil {
 		t.Fatalf("DeleteCustomer unexpectedly failed: %v", err)
 	}
 
-	_, err = data.SelectCustomerByPK(tx, insertedRow.ID.Int)
+	_, err = data.SelectCustomerByPK(context.Background(), tx, insertedRow.ID.Int)
 	if err != data.ErrNotFound {
 		t.Fatalf("Expected SelectCustomerByPK to return err data.ErrNotFound but it was: %v", err)
 	}
@@ -388,9 +389,9 @@ func TestDeleteWithCompositePK(t *testing.T) {
 	t.Parallel()
 
 	tx := begin(t)
-	defer tx.Rollback()
+	defer tx.Rollback(context.Background())
 
-	_, err := data.SelectSemesterByPK(tx, 1999, "Fall")
+	_, err := data.SelectSemesterByPK(context.Background(), tx, 1999, "Fall")
 	if err != data.ErrNotFound {
 		t.Fatalf("Expected SelectSemesterByPK to return err data.ErrNotFound but it was: %v", err)
 	}
@@ -401,22 +402,23 @@ func TestDeleteWithCompositePK(t *testing.T) {
 		Description: pgtype.Text{String: "Last of the century", Status: pgtype.Present},
 	}
 
-	err = data.InsertSemester(tx, &insertedRow)
+	err = data.InsertSemester(context.Background(), tx, &insertedRow)
 	if err != nil {
 		t.Fatalf("InsertSemeseter unexpectedly failed: %v", err)
 	}
 
-	_, err = data.SelectSemesterByPK(tx, insertedRow.Year.Int, insertedRow.Season.String)
+	_, err = data.SelectSemesterByPK(context.Background(), tx, insertedRow.Year.Int, insertedRow.Season.String)
 	if err != nil {
 		t.Fatalf("SelectSemesterByPK unexpectedly failed: %v", err)
 	}
 
-	data.DeleteSemester(tx,
+	data.DeleteSemester(context.Background(),
+		tx,
 		insertedRow.Year.Int,
 		insertedRow.Season.String,
 	)
 
-	_, err = data.SelectSemesterByPK(tx, insertedRow.Year.Int, insertedRow.Season.String)
+	_, err = data.SelectSemesterByPK(context.Background(), tx, insertedRow.Year.Int, insertedRow.Season.String)
 	if err != data.ErrNotFound {
 		t.Fatalf("Expected SelectSemesterByPK to return err data.ErrNotFound but it was: %v", err)
 	}
@@ -426,19 +428,19 @@ func TestMappingOfRenamedField(t *testing.T) {
 	t.Parallel()
 
 	tx := begin(t)
-	defer tx.Rollback()
+	defer tx.Rollback(context.Background())
 
 	insertedRow := data.RenamedFieldCustomer{
 		FName:    pgtype.Varchar{String: "John", Status: pgtype.Present},
 		LastName: pgtype.Varchar{String: "Smith", Status: pgtype.Present},
 	}
 
-	err := data.InsertRenamedFieldCustomer(tx, &insertedRow)
+	err := data.InsertRenamedFieldCustomer(context.Background(), tx, &insertedRow)
 	if err != nil {
 		t.Fatalf("InsertRenamedFieldCustomer unexpectedly failed: %v", err)
 	}
 
-	customer, err := data.SelectRenamedFieldCustomerByPK(tx, insertedRow.ID.Int)
+	customer, err := data.SelectRenamedFieldCustomerByPK(context.Background(), tx, insertedRow.ID.Int)
 	if err != nil {
 		t.Fatalf("SelectRenamedFieldCustomerByPK unexpectedly failed: %v", err)
 	}
@@ -452,18 +454,18 @@ func TestByteaByteSliceMapping(t *testing.T) {
 	t.Parallel()
 
 	tx := begin(t)
-	defer tx.Rollback()
+	defer tx.Rollback(context.Background())
 
 	insertedRow := data.Blob{
 		Payload: pgtype.Bytea{Bytes: []byte("Hello"), Status: pgtype.Present},
 	}
 
-	err := data.InsertBlob(tx, &insertedRow)
+	err := data.InsertBlob(context.Background(), tx, &insertedRow)
 	if err != nil {
 		t.Fatalf("InsertBlob unexpectedly failed: %v", err)
 	}
 
-	blob, err := data.SelectBlobByPK(tx, insertedRow.ID.Int)
+	blob, err := data.SelectBlobByPK(context.Background(), tx, insertedRow.ID.Int)
 	if err != nil {
 		t.Fatalf("SelectBlobByPK unexpectedly failed: %v", err)
 	}

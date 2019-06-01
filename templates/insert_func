@@ -1,4 +1,4 @@
-func Insert{{.StructName}}(db Queryer, row *{{.StructName}}) error {
+func Insert{{.StructName}}(ctx context.Context, db Queryer, row *{{.StructName}}) error {
   args := pgx.QueryArgs(make([]interface{}, 0, {{len .Columns}}))
 
   var columns, values []string
@@ -16,5 +16,5 @@ returning {{ range $i, $column := .PrimaryKeyColumns}}{{if $i}}, {{end}}"{{$colu
 
   psName := preparedName("pgxdataInsert{{.StructName}}", sql)
 
-  return prepareQueryRow(db, psName, sql, args...).Scan({{ range $i, $column := .PrimaryKeyColumns}}{{if $i}}, {{end}}&row.{{$column.FieldName}}{{end}})
+  return prepareQueryRow(ctx, db, psName, sql, args...).Scan({{ range $i, $column := .PrimaryKeyColumns}}{{if $i}}, {{end}}&row.{{$column.FieldName}}{{end}})
 }

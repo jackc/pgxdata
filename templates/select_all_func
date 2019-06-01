@@ -2,10 +2,10 @@ const SelectAll{{.StructName}}SQL = `select{{ range $i, $column := .Columns}}{{i
   "{{$column.ColumnName}}"{{end}}
 from "{{.TableName}}"`
 
-func SelectAll{{.StructName}}(db Queryer) ([]{{.StructName}}, error) {
+func SelectAll{{.StructName}}(ctx context.Context, db Queryer) ([]{{.StructName}}, error) {
   var rows []{{.StructName}}
 
-  dbRows, err := prepareQuery(db, "pgxdataSelectAll{{.StructName}}", SelectAll{{.StructName}}SQL)
+  dbRows, err := prepareQuery(ctx, db, "pgxdataSelectAll{{.StructName}}", SelectAll{{.StructName}}SQL)
   if err != nil {
     return nil, err
   }
