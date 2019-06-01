@@ -1,0 +1,11 @@
+github.com/BurntSushi/toml v0.0.0-20170626110600-a368813c5e64 h1:BuYewlQyh/jroxY8qx41SrzD8Go17GkyCyAeVmprvQI=
+github.com/BurntSushi/toml v0.0.0-20170626110600-a368813c5e64/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
+github.com/jackc/pgx v0.0.0-20170925160154-e7924c75904a h1:nNdMqLlWLKxj7EKy7bk5B2ZuglQya/BlN2dCYSMPR3k=
+github.com/jackc/pgx v0.0.0-20170925160154-e7924c75904a/go.mod h1:0ZGrqGqkRlliWnWB4zKnWtjbSWbGkVEFm4TeybAXq+I=
+github.com/pkg/errors v0.7.1 h1:0XSZhzhcAUrs2vsv1y5jaxWejlCCgvxI/kBpbRFMZ+o=
+github.com/pkg/errors v0.7.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
+github.com/spf13/cobra v0.0.0-20170905172051-b78744579491 h1:XOya2OGpG7Q4gS4MYHRoFSTlBGnZD40X+Kw2ikFQFXE=
+github.com/spf13/cobra v0.0.0-20170905172051-b78744579491/go.mod h1:1l0Ry5zgKvJasoi3XT1TypsSe7PqH0Sj9dhYf7v3XqQ=
+github.com/spf13/pflag v0.0.0-20170901120850-7aff26db30c1 h1:TRYBd3V/2jfUifd2vqT9S1O6mTgEwmgxgfRpI5zx6FU=
+github.com/spf13/pflag v0.0.0-20170901120850-7aff26db30c1/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=
