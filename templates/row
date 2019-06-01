@@ -5,6 +5,7 @@ import (
   "context"
   "strings"
 
+  errors "golang.org/x/xerrors"
   "github.com/jackc/pgx/v4"
   "github.com/jackc/pgtype"
 )

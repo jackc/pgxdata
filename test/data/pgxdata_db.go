@@ -4,13 +4,13 @@ package data
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"hash/fnv"
 	"io"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
+	errors "golang.org/x/xerrors"
 )
 
 const PGXDATA_VERSION = "0.1.0"

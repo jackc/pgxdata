@@ -3,11 +3,11 @@ package {{.PkgName}}
 
 import (
 	"fmt"
-	"errors"
 	"hash/fnv"
 	"io"
 	"context"
 
+	errors "golang.org/x/xerrors"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgconn"
 )

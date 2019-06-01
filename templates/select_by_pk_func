@@ -12,7 +12,7 @@ func Select{{.StructName}}ByPK(
   err := prepareQueryRow(ctx, db, "pgxdataSelect{{.StructName}}ByPK", select{{.StructName}}ByPKSQL{{range .PrimaryKeyColumns}}, {{.VarName}}{{end}}).Scan(
 {{range .Columns}}&row.{{.FieldName}},
     {{end}})
-  if err == pgx.ErrNoRows {
+  if errors.Is(err, pgx.ErrNoRows) {
     return nil, ErrNotFound
   } else if err != nil {
     return nil, err

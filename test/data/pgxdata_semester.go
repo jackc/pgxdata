@@ -8,6 +8,7 @@ import (
 
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
+	errors "golang.org/x/xerrors"
 )
 
 type Semester struct {
@@ -74,7 +75,7 @@ func SelectSemesterByPK(
 		&row.Season,
 		&row.Description,
 	)
-	if err == pgx.ErrNoRows {
+	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
 	} else if err != nil {
 		return nil, err

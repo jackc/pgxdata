@@ -8,6 +8,7 @@ import (
 
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
+	errors "golang.org/x/xerrors"
 )
 
 type Blob struct {
@@ -68,7 +69,7 @@ func SelectBlobByPK(
 		&row.ID,
 		&row.Payload,
 	)
-	if err == pgx.ErrNoRows {
+	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
 	} else if err != nil {
 		return nil, err
